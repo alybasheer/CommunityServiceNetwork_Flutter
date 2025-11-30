@@ -6,6 +6,7 @@ class RegisterRepo {
   final DioHelper _dioHelper = DioHelper();
   Future<SignupModel> postData(Object? reqdata) async {
     try {
+      
       final response = await _dioHelper.post(
         url: ApiNames.signup,
         reqBody: reqdata,

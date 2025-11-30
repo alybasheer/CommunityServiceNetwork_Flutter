@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:fyp_source_code/auth/presentation/controller/admin_verification_controller.dart';
 import 'package:fyp_source_code/auth/presentation/view/widgets/text_fields.dart';
@@ -44,51 +42,8 @@ class AdminVerificationScreen extends StatelessWidget {
                 style: AppTextStyling.body_12S.copyWith(color: AppColors.grey),
               ),
               AppSize.lHeight,
+
               // Profile Image
-              Text('Profile Photo', style: AppTextStyling.body_14M),
-              AppSize.sHeight,
-              Obx(
-                () => GestureDetector(
-                  onTap: pickImage,
-                  child: Container(
-                    height: 120,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.circular(AppSize.m),
-                      border: Border.all(color: AppColors.steelBlue, width: 2),
-                    ),
-                    child:
-                        controller.selectedImagePath.value != null
-                            ? ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                AppSize.m - 2,
-                              ),
-                              child: Image.file(
-                                File(controller.selectedImagePath.value!),
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                            : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.camera_alt,
-                                  color: AppColors.steelBlue,
-                                  size: 32,
-                                ),
-                                AppSize.sHeight,
-                                Text(
-                                  'Tap to upload photo',
-                                  style: AppTextStyling.body_12S.copyWith(
-                                    color: AppColors.steelBlue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                  ),
-                ),
-              ),
               AppSize.lHeight,
               // Full Name
               Text('Full Name', style: AppTextStyling.body_14M),
@@ -117,6 +72,9 @@ class AdminVerificationScreen extends StatelessWidget {
                 validator: (val) => null,
               ),
               AppSize.mHeight,
+              //City
+              Text('City', style: AppTextStyling.body_14M),
+              getTextField(hintText: 'Enter Your City', controller: controller.cityController, validator: (val)=> null),
               // Description
               Text(
                 'Why do you want to volunteer?',

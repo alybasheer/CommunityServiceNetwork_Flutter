@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_source_code/admin/presentation/view/admin_panel_screen.dart';
 import 'package:fyp_source_code/auth/data/models/signin_model.dart';
+import 'package:fyp_source_code/auth/data/repo/login-_repo.dart';
 import 'package:fyp_source_code/auth/data/repo/signup_repo.dart';
 import 'package:fyp_source_code/auth/presentation/view/role_selection_screen.dart';
-import 'package:fyp_source_code/network/error_handler.dart';
+import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:get/get.dart';
 
 class AuthController extends GetxController {
@@ -16,6 +18,7 @@ class AuthController extends GetxController {
   TextEditingController passController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
   SignupModel signupModel = SignupModel();
+  SignupModel loginModel = SignupModel();
   User user = User();
 
   RxBool isPasswordVisible = false.obs;
@@ -61,28 +64,36 @@ class AuthController extends GetxController {
 
   Future<void> onClick() async {
     if (loginFormKey.currentState!.validate()) {
-      // try {
-      // authModel.email = emailController.text;
-      // authModel.password = passController.text;
+      try {
+        loginModel.user = User(
+          email: emailController.text,
+          password: passController.text,
+        );
+        final resp = await LoginRepo().loginRepo(loginModel);
+        // persist the returned token from server
 
-      //   var responseData = await LoginRepo().postData(authModel);
-      //   print('Login successful: $responseData');
-      //   ProfileRepo().getUserProfile();
-      //   Get.to(MainViewScreen());
-      //   if (isRememberMe.value) {
-      //     StorageHelper().saveData('isLogin', responseData.token);
-      //     print("saved token ${StorageHelper().readData('isLogin')}");
-      //   }
-      // } catch (e) {
-      //   ErrorHandler.exception(e as Exception);
-      // }
+        StorageHelper().saveData('token', resp.accessToken);
+        StorageHelper().saveData('email', loginModel.user!.email);
+        
+
+        print(
+          'token ---------------------> ${StorageHelper().readData('token')}',
+        );
+        print(
+          'email ---------------------> ${StorageHelper().readData('email')}',
+        );
+        if(resp.user?.role == 'admin'){
+          Get.to(AdminPanelScreen());
+        }
+        Get.to(RoleSelectionScreen());
+      } catch (e) {
+        print("error reason -> $e");
+      }
     }
   }
 
   Future<void> onRegisterClick() async {
-
     if (registerFormKey.currentState!.validate()) {
-      
       signupModel.user = User(
         username: usernameController.text,
         email: emailController.text,
@@ -92,10 +103,13 @@ class AuthController extends GetxController {
       print('Username: ${usernameController.text}');
       print('Email: ${emailController.text}');
       print('Password: ${passController.text}');
-      print('Payload being sent: ${signupModel.toJson()}');
+      print('Payload being sent: $signupModel');
       print('========================');
       try {
-        await RegisterRepo().postData(signupModel.toJson());
+        final resp = await RegisterRepo().postData(signupModel);
+        if (resp.accessToken != null) {
+          StorageHelper().saveData('token', resp.accessToken);
+        }
         Get.to(RoleSelectionScreen());
       } catch (e) {
         // ErrorHandler.exception(e);

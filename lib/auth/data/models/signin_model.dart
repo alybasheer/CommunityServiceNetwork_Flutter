@@ -39,18 +39,20 @@ class SignupModel {
 }
 
 class User {
+  String? id;
   String? username;
   String? email;
   String? password;
   String? role;
 
-  User({this.username, this.email, this.password, this.role});
+  User({this.username, this.email, this.password, this.role, this.id});
 
   User.fromJson(Map<String, dynamic> json) {
     username = json['username'];
     email = json['email'];
     password = json['password'];
     role = json['role'];
+    id = json['_id'];
   }
 
   Map<String, dynamic> toJson() {

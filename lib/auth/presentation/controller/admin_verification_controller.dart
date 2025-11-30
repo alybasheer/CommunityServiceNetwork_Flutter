@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_source_code/auth/data/models/admin_verification_request.dart';
+import 'package:fyp_source_code/auth/data/repo/volunteer_verification_repo.dart';
+import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:get/get.dart';
 
 class AdminVerificationController extends GetxController {
@@ -8,10 +10,12 @@ class AdminVerificationController extends GetxController {
   final cnicController = TextEditingController();
   final descriptionController = TextEditingController();
   final locationController = TextEditingController();
-
+  final cityController = TextEditingController();
   final Rx<String?> selectedImagePath = Rx<String?>(null);
   final RxBool isSubmitting = false.obs;
-  final RxList<AdminVerificationRequest> submissions = RxList();
+  final RxList<VolunteerVerification> submissions = RxList();
+
+  final VolunteerVerificationRepo _repo = VolunteerVerificationRepo();
 
   @override
   void onInit() {
@@ -21,10 +25,13 @@ class AdminVerificationController extends GetxController {
 
   /// Update status of a submission (pending -> approved/disapproved)
   void updateSubmissionStatus(String id, String newStatus) {
-    final idx = submissions.indexWhere((s) => s.id == id);
+    final idx = submissions.indexWhere((s) => s.sId == id);
     if (idx >= 0) {
-      final updated = submissions[idx].copyWith(status: newStatus);
-      submissions[idx] = updated;
+      // Update status in-place on the model
+      final current = submissions[idx];
+      current.status = newStatus;
+      // Trigger RxList change by reassigning the item
+      submissions[idx] = current;
     }
   }
 
@@ -33,27 +40,28 @@ class AdminVerificationController extends GetxController {
   }
 
   Future<void> submitVerification() async {
-    if (!validateForm()) {
-      Get.snackbar('Error', 'Please fill all fields');
-      return;
-    }
+    // if (!validateForm()) {
+    //   Get.snackbar('Error', 'Please fill all fields');
+    //   return;
+    // }
 
     isSubmitting.value = true;
-    try {
-      final request = AdminVerificationRequest(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        fullName: fullNameController.text,
-        expertise: expertiseController.text,
-        cnicNumber: cnicController.text,
-        description: descriptionController.text,
-        location: locationController.text,
-        imagePath: selectedImagePath.value,
-        submittedAt: DateTime.now(),
-        status: 'pending',
-      );
+    StorageHelper().readData('token');
 
-      submissions.add(request);
-      await saveSubmissions();
+    try {
+      final reqBody = {
+        'name': fullNameController.text,
+        'expertise': expertiseController.text,
+        'cnic': cnicController.text,
+        'reason': descriptionController.text,
+        'location': locationController.text,
+        'city': cityController.text,
+        // include image path if available; backend may expect multipart for actual file
+        'imagePath': selectedImagePath.value,
+      };
+
+      final created = await _repo.submit(reqBody);
+      
 
       Get.snackbar('Success', 'Your verification request has been submitted');
       clearForm();
@@ -89,34 +97,16 @@ class AdminVerificationController extends GetxController {
   }
 
   void loadSubmissions() {
-    // TODO: Load from backend/database
-    // For now, populate some sample submissions so admin panel has data to show
-    if (submissions.isEmpty) {
-      submissions.addAll([
-        AdminVerificationRequest(
-          id: 'sample1',
-          fullName: 'Ali Khan',
-          expertise: 'Medical',
-          cnicNumber: '35202-1234567-1',
-          description: 'I have first aid & emergency response experience.',
-          location: 'Downtown',
-          imagePath: null,
-          submittedAt: DateTime.now().subtract(Duration(hours: 5)),
-          status: 'pending',
-        ),
-        AdminVerificationRequest(
-          id: 'sample2',
-          fullName: 'Sara Ahmed',
-          expertise: 'Search & Rescue',
-          cnicNumber: '35202-7654321-0',
-          description: 'Experienced in SAR and logistics.',
-          location: 'Northside',
-          imagePath: null,
-          submittedAt: DateTime.now().subtract(Duration(days: 1, hours: 2)),
-          status: 'pending',
-        ),
-      ]);
-    }
+    // Attempt to load from backend
+    _repo
+        .fetchAll()
+        .then((list) {
+          submissions.assignAll(list);
+        })
+        .catchError((e) {
+          // If backend fails, keep any local data (or empty)
+          print('Failed to load verifications: $e');
+        });
   }
 
   @override

@@ -28,7 +28,7 @@ class LoginScreen extends StatelessWidget {
                   AppSize.xxxlHeight,
 
                   Text(
-                    "Login To\nYour Account",
+                    "Login To Your Account",
                     style: AppTextStyling.title_30M.copyWith(
                       color: AppColors.black,
                     ),

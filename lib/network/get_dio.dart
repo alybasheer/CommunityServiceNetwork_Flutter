@@ -1,19 +1,24 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
+import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 
-import 'package:fyp_source_code/services/api_names.dart';
-
-getDio() {
-  Dio getDio = Dio();
-  Options options = Options(
-    contentType: 'application/json',
+Options getOptions({bool isFormData = false, bool isauthorize = false}) {
+  String? token = StorageHelper().readData('token');
+  Map<String, dynamic> getheader() => {"Authorization": "Bearer $token"};
+  return Options(
+    contentType: isFormData ? null : 'application/json',
+    headers: {
+      if (isauthorize) ...getheader(),
+      if (isFormData) 'Content-Type': 'multipart/form-data',
+    },
     sendTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 30),
     receiveDataWhenStatusError: true,
     validateStatus: (status) => status! < 500,
   );
+}
+
+getDio() {
+  Dio getDio = Dio();
   getDio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (RequestOptions options, handler) {
@@ -28,6 +33,7 @@ getDio() {
       },
       onResponse: (Response response, handler) {
         print("Response Data ${response.data}");
+        
         return handler.next(response);
       },
       onError: (error, handler) {

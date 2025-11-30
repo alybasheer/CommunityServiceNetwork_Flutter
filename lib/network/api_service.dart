@@ -1,11 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:fyp_source_code/network/exceptions.dart';
 import 'package:fyp_source_code/network/get_dio.dart';
-import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 
 class DioHelper {
-  String? token = StorageHelper().readData('isLogin');
-  Map<String, dynamic> getheader() => {"Authorization": "Bearer $token"};
   Dio dio = getDio();
 
   void _handleErrorResponse(String url, Response response) {
@@ -22,26 +19,12 @@ class DioHelper {
     throw FetchDataExceptions('Error : $errorMsg');
   }
 
-  Options options({bool isFormData = false, bool isauthorize = false}) {
-    return Options(
-      contentType: isFormData ? null : 'application/json',
-      headers: {
-        if (isauthorize) ...getheader(),
-        if (isFormData) 'Content-Type': 'multipart/form-data',
-      },
-      sendTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 30),
-      receiveDataWhenStatusError: true,
-      validateStatus: (status) => status! < 500,
-    );
-  }
-
   //get
   Future<dynamic> get({required String url, bool isauthorize = false}) async {
     try {
       Response response = await dio.get(
         url,
-        options: options(isauthorize: isauthorize),
+        options: getOptions(isauthorize: isauthorize),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return response.data;
@@ -67,7 +50,7 @@ class DioHelper {
     try {
       Response response = await dio.put(
         url,
-        options: options(isFormData: isFormData, isauthorize: isauthorize),
+        options: getOptions(isFormData: isFormData, isauthorize: isauthorize),
         data: reqBody,
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -92,7 +75,7 @@ class DioHelper {
     try {
       Response response = await dio.post(
         url,
-        options: options(isauthorize: isauthorize),
+        options: getOptions(isauthorize: isauthorize),
         data: reqBody,
       );
 

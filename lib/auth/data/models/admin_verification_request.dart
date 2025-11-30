@@ -1,83 +1,57 @@
-class AdminVerificationRequest {
-  final String id;
-  final String fullName;
-  final String expertise;
-  final String cnicNumber;
-  final String description;
-  final String location;
-  final String? imagePath;
-  final DateTime submittedAt;
-  final String status; // pending, approved, disapproved
-  final String? adminComments;
+class VolunteerVerification {
+  String? sId;
+  String? userId;
+  String? name;
+  String? city;
+  String? location;
+  String? expertise;
+  String? reason;
+  String? cnic;
+  String? status;
+  String? createdAt;
+  String? updatedAt;
 
-  AdminVerificationRequest({
-    required this.id,
-    required this.fullName,
-    required this.expertise,
-    required this.cnicNumber,
-    required this.description,
-    required this.location,
-    this.imagePath,
-    required this.submittedAt,
-    this.status = 'pending',
-    this.adminComments,
+  VolunteerVerification({
+    this.sId,
+    this.userId,
+    this.name,
+    this.city,
+    this.location,
+    this.expertise,
+    this.reason,
+    this.cnic,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
   });
 
-  AdminVerificationRequest copyWith({
-    String? id,
-    String? fullName,
-    String? expertise,
-    String? cnicNumber,
-    String? description,
-    String? location,
-    String? imagePath,
-    DateTime? submittedAt,
-    String? status,
-    String? adminComments,
-  }) {
-    return AdminVerificationRequest(
-      id: id ?? this.id,
-      fullName: fullName ?? this.fullName,
-      expertise: expertise ?? this.expertise,
-      cnicNumber: cnicNumber ?? this.cnicNumber,
-      description: description ?? this.description,
-      location: location ?? this.location,
-      imagePath: imagePath ?? this.imagePath,
-      submittedAt: submittedAt ?? this.submittedAt,
-      status: status ?? this.status,
-      adminComments: adminComments ?? this.adminComments,
-    );
+  VolunteerVerification.fromJson(Map<String, dynamic> json) {
+    sId = json['_id'];
+    userId = json['userId'];
+    name = json['name'];
+    city = json['city'];
+    location = json['location'];
+    expertise = json['expertise'];
+    reason = json['reason'];
+    cnic = json['cnic'];
+    status = json['status'];
+    createdAt = json['createdAt'];
+    updatedAt = json['updatedAt'];
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'fullName': fullName,
-      'expertise': expertise,
-      'cnicNumber': cnicNumber,
-      'description': description,
-      'location': location,
-      'imagePath': imagePath,
-      'submittedAt': submittedAt.toIso8601String(),
-      'status': status,
-      'adminComments': adminComments,
-    };
-  }
-
-  factory AdminVerificationRequest.fromMap(Map<String, dynamic> map) {
-    return AdminVerificationRequest(
-      id: map['id'] ?? '',
-      fullName: map['fullName'] ?? '',
-      expertise: map['expertise'] ?? '',
-      cnicNumber: map['cnicNumber'] ?? '',
-      description: map['description'] ?? '',
-      location: map['location'] ?? '',
-      imagePath: map['imagePath'],
-      submittedAt: DateTime.parse(
-        map['submittedAt'] ?? DateTime.now().toIso8601String(),
-      ),
-      status: map['status'] ?? 'pending',
-      adminComments: map['adminComments'],
-    );
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['_id'] = sId;
+    data['userId'] = userId;
+    data['name'] = name;
+    data['city'] = city;
+    data['location'] = location;
+    data['expertise'] = expertise;
+    data['reason'] = reason;
+    data['cnic'] = cnic;
+    data['status'] = status;
+    data['createdAt'] = createdAt;
+    data['updatedAt'] = updatedAt;
+    return data;
   }
 }

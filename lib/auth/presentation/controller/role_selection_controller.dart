@@ -1,4 +1,3 @@
-import 'package:fyp_source_code/auth/presentation/controller/admin_verification_controller.dart';
 import 'package:fyp_source_code/auth/presentation/view/admin_verification_screen.dart';
 import 'package:fyp_source_code/volunteer_side/home/presentation/view/home_screen.dart';
 import 'package:get/get.dart';

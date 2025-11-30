@@ -99,8 +99,8 @@ class RegisterScreen extends StatelessWidget {
                 AppSize.xxxlHeight,
                 Obx(
                   () => GestureDetector(
-                    // onTap: () => authController.onRegisterClick(),
-                    onTap: () => Get.to(RoleSelectionScreen()),
+                    onTap: () => authController.onRegisterClick(),
+                   
                     child: buildPlanButton(
                       label: 'Create Acount',
                       backgroundColor:

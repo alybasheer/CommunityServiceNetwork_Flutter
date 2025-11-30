@@ -1,4 +1,7 @@
+import 'package:fyp_source_code/admin/presentation/controller/admin_panel_controller.dart';
+import 'package:fyp_source_code/admin/presentation/view/admin_panel_screen.dart';
 import 'package:fyp_source_code/auth/presentation/bindings/auth_bindings.dart';
+import 'package:fyp_source_code/auth/presentation/view/admin_verification_screen.dart';
 import 'package:fyp_source_code/auth/presentation/view/login.dart';
 import 'package:fyp_source_code/auth/presentation/view/register_screen.dart';
 import 'package:fyp_source_code/auth/presentation/view/role_selection_screen.dart';
@@ -17,7 +20,11 @@ class RoutePaths {
       binding: AuthBindings(),
     ),
     GetPage(name: RouteNames.home, page: () => HomeScreen()),
-    GetPage(name: RouteNames.login, page: () => LoginScreen()),
+    GetPage(
+      name: RouteNames.login,
+      page: () => LoginScreen(),
+      binding: AuthBindings(),
+    ),
     GetPage(name: RouteNames.coordination, page: () => CoordinationScreen()),
     GetPage(
       name: RouteNames.roleSelection,
@@ -25,9 +32,8 @@ class RoutePaths {
       binding: AuthBindings(),
     ),
     GetPage(name: RouteNames.map, page: () => MapScreen()),
-    GetPage(
-      name: RouteNames.startPoint,
-      page: () => StartPoint(),
-    ),
+    GetPage(name: RouteNames.startPoint, page: () => StartPoint()),
+    GetPage(name: RouteNames.adminVerification, page: () => AdminVerificationScreen()),
+    GetPage(name: RouteNames.adminPanel, page: () => AdminPanelScreen(),),
   ];
 }

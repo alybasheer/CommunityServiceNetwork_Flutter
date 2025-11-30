@@ -1,19 +1,58 @@
 import 'package:fyp_source_code/auth/presentation/controller/admin_verification_controller.dart';
+import 'package:fyp_source_code/network/api_service.dart';
+import 'package:fyp_source_code/services/api_names.dart';
 import 'package:get/get.dart';
 
 class AdminPanelController extends GetxController {
   late final AdminVerificationController verificationCtrl;
+  final dioHelper = DioHelper();
+  var res = <dynamic>[].obs;
 
   @override
   void onInit() {
     super.onInit();
+    fetchVolunteerApplications();
+
     verificationCtrl = Get.put(AdminVerificationController());
   }
 
-  // Expose submissions as RxList for the view
-  RxList get submissions => verificationCtrl.submissions;
+  Future<dynamic> fetchVolunteerApplications() async {
+    try {
+      final response = await dioHelper.get(
+        url: ApiNames.voulnteerApplications,
+        isauthorize: true,
+      );
+      print("RES LENGTH = ${res.length}");
+      print("FULL RESPONSE = $response");
+      res.value = response['data'];
+      return res;
+    } catch (e) {
+      print('Error fetching volunteer applications: $e');
+      rethrow;
+    }
+  }
 
-  void approve(String id) {
+  Future<dynamic> approveVolunteer(String userId) {
+    return dioHelper.post(
+      url: ApiNames.approveVolunteer(userId),
+      isauthorize: true,
+    ).then((value){
+      res.refresh();
+      Get.back();
+    }
+    );
+  }
+  Future<dynamic> rejectVolunteer(String userId) {
+    return dioHelper.post(
+      url: ApiNames.rejectVolunteer(userId),
+      isauthorize: true,
+    ).then((value){
+      res.refresh();
+      Get.back();
+    });
+  }
+
+  void approve(String id, int index) {
     verificationCtrl.updateSubmissionStatus(id, 'approved');
   }
 
