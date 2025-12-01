@@ -74,7 +74,6 @@ class AuthController extends GetxController {
 
         StorageHelper().saveData('token', resp.accessToken);
         StorageHelper().saveData('email', loginModel.user!.email);
-        
 
         print(
           'token ---------------------> ${StorageHelper().readData('token')}',
@@ -82,7 +81,7 @@ class AuthController extends GetxController {
         print(
           'email ---------------------> ${StorageHelper().readData('email')}',
         );
-        if(resp.user?.role == 'admin'){
+        if (resp.user?.role == 'admin') {
           Get.to(AdminPanelScreen());
         }
         Get.to(RoleSelectionScreen());

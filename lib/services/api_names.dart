@@ -9,4 +9,5 @@ class ApiNames {
       'http://localhost:3000/admin/volunteer-applications/$id/approve';
   static String rejectVolunteer(String id) =>
       'http://localhost:3000/admin/volunteer-applications/$id/reject';
+  static const getLocation = 'http://localhost:3000/authentication/location';
 }

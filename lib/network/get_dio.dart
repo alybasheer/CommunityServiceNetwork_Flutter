@@ -34,6 +34,7 @@ getDio() {
       onResponse: (Response response, handler) {
         print("Response Data ${response.data}");
         
+        
         return handler.next(response);
       },
       onError: (error, handler) {
