@@ -16,6 +16,8 @@ String? readData(String key) {
   void clearAllData() {
     storage.erase();
   }
+
+  void writeData(String getCacheKey, List<Map<String, dynamic>> json) {}
   
 
 

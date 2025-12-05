@@ -22,8 +22,6 @@ class AdminPanelController extends GetxController {
         url: ApiNames.voulnteerApplications,
         isauthorize: true,
       );
-      print("RES LENGTH = ${res.length}");
-      print("FULL RESPONSE = $response");
       res.value = response['data'];
       return res;
     } catch (e) {
@@ -36,17 +34,18 @@ class AdminPanelController extends GetxController {
     return dioHelper.post(
       url: ApiNames.approveVolunteer(userId),
       isauthorize: true,
-    ).then((value){
+    ).then((value) {
+      fetchVolunteerApplications();
       res.refresh();
       Get.back();
-    }
-    );
+    });
   }
   Future<dynamic> rejectVolunteer(String userId) {
     return dioHelper.post(
       url: ApiNames.rejectVolunteer(userId),
       isauthorize: true,
     ).then((value){
+      fetchVolunteerApplications();
       res.refresh();
       Get.back();
     });

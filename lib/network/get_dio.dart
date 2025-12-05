@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:fyp_source_code/services/api_names.dart';
 import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 
 Options getOptions({bool isFormData = false, bool isauthorize = false}) {
   String? token = StorageHelper().readData('token');
   Map<String, dynamic> getheader() => {"Authorization": "Bearer $token"};
   return Options(
+    
     contentType: isFormData ? null : 'application/json',
     headers: {
       if (isauthorize) ...getheader(),
@@ -14,6 +16,7 @@ Options getOptions({bool isFormData = false, bool isauthorize = false}) {
     receiveTimeout: const Duration(seconds: 30),
     receiveDataWhenStatusError: true,
     validateStatus: (status) => status! < 500,
+    
   );
 }
 
@@ -28,7 +31,7 @@ getDio() {
         // print('RequestBody ${jsonEncode(options.data)}');
         print("Method -- ${options.method}");
 
-        // options.baseUrl = options.copyWith(baseUrl: ApiNames.baseUrl).baseUrl;
+        options.baseUrl = options.copyWith(baseUrl: ApiNames.baseUrl).baseUrl;
         return handler.next(options);
       },
       onResponse: (Response response, handler) {

@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
+
 class RoundButton extends StatelessWidget {
-  final bool loading;  // ✅ Instance variable
+  final bool loading;
   final VoidCallback onpressed;
   final double height, width;
   final Color color;
   final String title;
-  double? radius; // Default radius for the button
-  TextStyle? textStyle; // Optional text style for the button
+  final double? radius;
+  final TextStyle? textStyle;
 
-
-
-   RoundButton({
+  const RoundButton({
     super.key,
     required this.onpressed,
     required this.title,
@@ -18,8 +17,8 @@ class RoundButton extends StatelessWidget {
     required this.width,
     this.color = Colors.purple,
     this.loading = false,
-    this.radius = 8.0,  // ✅ Allow passing radius
-    
+    this.radius = 8.0,
+    this.textStyle,
   });
 
   @override
@@ -29,15 +28,14 @@ class RoundButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         minimumSize: Size(width, height),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius!),
+          borderRadius: BorderRadius.circular(radius ?? 8.0),
         ),
         backgroundColor: color,
       ),
-      child: loading
-          ? Center(child: CircularProgressIndicator())
-          : Text(
-        title,style: textStyle,
-      ),
+      child:
+          loading
+              ? const Center(child: CircularProgressIndicator())
+              : Text(title, style: textStyle),
     );
   }
 }

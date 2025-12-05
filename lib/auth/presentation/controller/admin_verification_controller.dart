@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_source_code/auth/data/models/admin_verification_request.dart';
 import 'package:fyp_source_code/auth/data/repo/volunteer_verification_repo.dart';
+import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
 import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
+import 'package:fyp_source_code/utilities/validators/validators.dart';
+import 'package:fyp_source_code/utilities/validators/verification_validators.dart';
 import 'package:get/get.dart';
 
 class AdminVerificationController extends GetxController {
@@ -11,10 +14,22 @@ class AdminVerificationController extends GetxController {
   final descriptionController = TextEditingController();
   final locationController = TextEditingController();
   final cityController = TextEditingController();
+
+  // Form state observables for error messages
+  final RxString fullNameError = ''.obs;
+  final RxString expertiseError = ''.obs;
+  final RxString cnicError = ''.obs;
+  final RxString descriptionError = ''.obs;
+  final RxString locationError = ''.obs;
+  final RxString cityError = ''.obs;
+  final RxString emailError = ''.obs;
+
+  // UI state observables
   final Rx<String?> selectedImagePath = Rx<String?>(null);
   final RxBool isSubmitting = false.obs;
   final RxList<VolunteerVerification> submissions = RxList();
 
+  final verificationFormKey = GlobalKey<FormState>();
   final VolunteerVerificationRepo _repo = VolunteerVerificationRepo();
 
   @override
@@ -23,14 +38,55 @@ class AdminVerificationController extends GetxController {
     loadSubmissions();
   }
 
+  // ============ VALIDATION METHODS ============
+  String? validateFullName(String? value) {
+    final result = VerificationValidators.validateFullName(value);
+    fullNameError.value = result ?? '';
+    return result;
+  }
+
+  String? validateExpertise(String? value) {
+    final result = VerificationValidators.validateExpertise(value);
+    expertiseError.value = result ?? '';
+    return result;
+  }
+
+  String? validateEmail(String? value) {
+    final result = AppValidators.validateEmail(value);
+    emailError.value = result ?? '';
+    return result;
+  }
+
+  String? validateCNIC(String? value) {
+    final result = VerificationValidators.validateCNIC(value);
+    cnicError.value = result ?? '';
+    return result;
+  }
+
+  String? validateDescription(String? value) {
+    final result = VerificationValidators.validateDescription(value);
+    descriptionError.value = result ?? '';
+    return result;
+  }
+
+  String? validateCity(String? value) {
+    final result = VerificationValidators.validateCity(value);
+    cityError.value = result ?? '';
+    return result;
+  }
+
+  String? validateLocation(String? value) {
+    final result = VerificationValidators.validateLocation(value);
+    locationError.value = result ?? '';
+    return result;
+  }
+
   /// Update status of a submission (pending -> approved/disapproved)
   void updateSubmissionStatus(String id, String newStatus) {
     final idx = submissions.indexWhere((s) => s.sId == id);
     if (idx >= 0) {
-      // Update status in-place on the model
       final current = submissions[idx];
       current.status = newStatus;
-      // Trigger RxList change by reassigning the item
       submissions[idx] = current;
     }
   }
@@ -39,73 +95,107 @@ class AdminVerificationController extends GetxController {
     selectedImagePath.value = path;
   }
 
+  // ============ SUBMIT VERIFICATION ============
   Future<void> submitVerification() async {
-    // if (!validateForm()) {
-    //   Get.snackbar('Error', 'Please fill all fields');
+    // Validate form
+    if (!verificationFormKey.currentState!.validate()) {
+      ToastHelper.showError('Please fix the errors above');
+      return;
+    }
+
+    // // Validate image is selected
+    // if (selectedImagePath.value == null || selectedImagePath.value!.isEmpty) {
+    //   ToastHelper.showError('Please upload a profile photo');
     //   return;
     // }
 
     isSubmitting.value = true;
-    StorageHelper().readData('token');
 
     try {
+      final token = StorageHelper().readData('token');
+      if (token == null || token.isEmpty) {
+        throw Exception('User not authenticated. Please login again');
+      }
+
       final reqBody = {
-        'name': fullNameController.text,
-        'expertise': expertiseController.text,
-        'cnic': cnicController.text,
-        'reason': descriptionController.text,
-        'location': locationController.text,
-        'city': cityController.text,
-        // include image path if available; backend may expect multipart for actual file
+        'name': fullNameController.text.trim(),
+        'expertise': expertiseController.text.trim(),
+        'cnic': cnicController.text.trim(),
+        'reason': descriptionController.text.trim(),
+        'location': locationController.text.trim(),
+        'city': cityController.text.trim(),
         'imagePath': selectedImagePath.value,
       };
 
-      final created = await _repo.submit(reqBody);
-      
+      print('📤 Verification payload: $reqBody');
 
-      Get.snackbar('Success', 'Your verification request has been submitted');
+      // Submit returns a single VolunteerVerification object
+      final submission = await _repo.submit(reqBody);
+
+      print(' Verification submitted successfully');
+      print(' Submission ID: ${submission.sId}');
+      print(' Submission Status: ${submission.status}');
+
+      // Save verification status to storage
+      StorageHelper().saveData(
+        'verificationStatus',
+        submission.status ?? 'pending',
+      );
+
+      ToastHelper.showSuccess('Verification request submitted!');
       clearForm();
-      Get.back();
+
+      Future.delayed(Duration(milliseconds: 500), () {
+        Get.toNamed('/waitingScreen');
+         StorageHelper().saveData('verificationStatus', submission.status ?? 'pending');
+      });
     } catch (e) {
-      Get.snackbar('Error', 'Failed to submit: ${e.toString()}');
+      print('❌ Verification error: $e');
+      ToastHelper.showError(e.toString().replaceAll('Exception: ', ''));
     } finally {
       isSubmitting.value = false;
     }
   }
 
+  // ============ FORM VALIDATION ============
   bool validateForm() {
     return fullNameController.text.isNotEmpty &&
         expertiseController.text.isNotEmpty &&
         cnicController.text.isNotEmpty &&
         descriptionController.text.isNotEmpty &&
         locationController.text.isNotEmpty &&
+        cityController.text.isNotEmpty &&
         selectedImagePath.value != null;
   }
 
+  // ============ CLEAR FORM ============
   void clearForm() {
     fullNameController.clear();
     expertiseController.clear();
     cnicController.clear();
     descriptionController.clear();
     locationController.clear();
+    cityController.clear();
     selectedImagePath.value = null;
+
+    fullNameError.value = '';
+    expertiseError.value = '';
+    cnicError.value = '';
+    descriptionError.value = '';
+    locationError.value = '';
+    cityError.value = '';
   }
 
-  Future<void> saveSubmissions() async {
-    // TODO: Integrate with backend/database
-    // For now, this is stored in memory
-  }
-
+  // ============ LOAD SUBMISSIONS ============
   void loadSubmissions() {
-    // Attempt to load from backend
     _repo
         .fetchAll()
         .then((list) {
           submissions.assignAll(list);
+          print('✅ Loaded ${list.length} submissions');
         })
         .catchError((e) {
-          // If backend fails, keep any local data (or empty)
-          print('Failed to load verifications: $e');
+          print('❌ Failed to load verifications: $e');
         });
   }
 
@@ -116,6 +206,7 @@ class AdminVerificationController extends GetxController {
     cnicController.dispose();
     descriptionController.dispose();
     locationController.dispose();
+    cityController.dispose();
     super.onClose();
   }
 }

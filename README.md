@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # fyp_source_code
 
 A new Flutter project.
@@ -14,3 +15,6 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# frontendForWeHelp
+>>>>>>> d6b110a2bf1887d63d7a61440ced59516d6d860b

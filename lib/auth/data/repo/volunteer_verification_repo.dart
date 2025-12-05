@@ -31,20 +31,42 @@ class VolunteerVerificationRepo {
   }
 
   /// Submit a new volunteer verification (apply)
-Future<List<VolunteerVerification>> submit(Object? reqBody) async {
-  final response = await _dioHelper.post(
-    url: ApiNames.voulnteerVerification,
-    reqBody: reqBody,
-    isauthorize: true,
-  );
+  /// Returns the submitted verification object
+  Future<VolunteerVerification> submit(Object? reqBody) async {
+    final response = await _dioHelper.post(
+      url: ApiNames.voulnteerVerification,
+      reqBody: reqBody,
+      isauthorize: true,
+    );
 
-  if (response is List) {
-    return response
-        .map((e) => VolunteerVerification.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
-  } else {
-    throw Exception('Expected a list from API, got ${response.runtimeType}');
+    print('📦 Submit Response Type: ${response.runtimeType}');
+    print('📦 Submit Response: $response');
+
+    if (response is Map) {
+      final Map<String, dynamic> responseMap = Map<String, dynamic>.from(
+        response,
+      );
+
+      // Check if response has nested 'data' object
+      if (responseMap.containsKey('data') && responseMap['data'] is Map) {
+        print('✅ Found nested data object');
+        return VolunteerVerification.fromJson(
+          Map<String, dynamic>.from(responseMap['data']),
+        );
+      }
+
+      // Direct response object
+      print('✅ Direct response object');
+      return VolunteerVerification.fromJson(responseMap);
+    } else if (response is List && response.isNotEmpty) {
+      print('✅ List response, using first item');
+      return VolunteerVerification.fromJson(
+        Map<String, dynamic>.from(response[0]),
+      );
+    } else {
+      throw Exception(
+        'Expected a Map or List from API, got ${response.runtimeType}',
+      );
+    }
   }
-}
-
 }

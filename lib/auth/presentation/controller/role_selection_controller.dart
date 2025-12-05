@@ -1,4 +1,4 @@
-import 'package:fyp_source_code/auth/presentation/view/admin_verification_screen.dart';
+import 'package:fyp_source_code/auth/presentation/view/admin_verification_screen_professional.dart';
 import 'package:fyp_source_code/volunteer_side/home/presentation/view/home_screen.dart';
 import 'package:get/get.dart';
 
@@ -19,7 +19,7 @@ class RoleSelectionController extends GetxController {
       case 'volunteer':
         // Navigate to volunteer onboarding or main app
         // Get.toNamed('/adminVerification');
-        Get.to(AdminVerificationScreen());
+        Get.to(AdminVerificationScreenProfessional());
         break;
       case 'admin':
         // Navigate to admin verification form
