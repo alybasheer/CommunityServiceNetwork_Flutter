@@ -67,6 +67,31 @@ class DioHelper {
     }
   }
 
+  Future<dynamic> patch({
+    required String url,
+    Object? reqBody,
+    bool isauthorize = false,
+  }) async {
+    try {
+      Response response = await dio.patch(
+        url,
+        options: getOptions(isauthorize: isauthorize),
+        data: reqBody,
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data;
+      } else if (response.statusCode == 400) {
+        throw BadRequestException('Bad request');
+      } else if (response.statusCode == 401) {
+        throw UnauthorizedException('Unauthorized Request');
+      } else {
+        _handleErrorResponse(url, response);
+      }
+    } on DioException catch (e) {
+      throw FetchDataExceptions(e.message ?? 'Network Error');
+    }
+  }
+
   Future<dynamic> post({
     required String url,
     Object? reqBody,

@@ -1,10 +1,10 @@
-import 'package:fyp_source_code/admin/presentation/controller/admin_panel_controller.dart';
 import 'package:fyp_source_code/admin/presentation/view/admin_panel_screen.dart';
 import 'package:fyp_source_code/auth/presentation/bindings/auth_bindings.dart';
 import 'package:fyp_source_code/auth/presentation/view/admin_verification_screen.dart';
 import 'package:fyp_source_code/auth/presentation/view/login.dart';
 import 'package:fyp_source_code/auth/presentation/view/register_screen.dart';
 import 'package:fyp_source_code/auth/presentation/view/role_selection_screen.dart';
+import 'package:fyp_source_code/help_requests/presentation/view/request_help_screen.dart';
 import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/start_point/view.dart';
 import 'package:fyp_source_code/volunteer_side/coordination/presentation/view/coordination_screen.dart';
@@ -35,5 +35,6 @@ class RoutePaths {
     GetPage(name: RouteNames.startPoint, page: () => StartPoint()),
     GetPage(name: RouteNames.adminVerification, page: () => AdminVerificationScreen()),
     GetPage(name: RouteNames.adminPanel, page: () => AdminPanelScreen(),),
+    GetPage(name: RouteNames.requestHelp, page: () => RequestHelpScreen()),
   ];
 }

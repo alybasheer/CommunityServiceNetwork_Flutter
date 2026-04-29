@@ -5,9 +5,8 @@ import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 import 'package:get/get.dart';
 
-final roleCntrl = Get.find<RoleSelectionController>();
-
 Widget roleCard( String role, IconData icon, Color iconColor,String title, String description) {
+    final roleCntrl = Get.find<RoleSelectionController>();
     return GestureDetector(
               onTap: () {
                 roleCntrl.selectRole(role);

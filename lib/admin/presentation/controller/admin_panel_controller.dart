@@ -24,7 +24,13 @@ class AdminPanelController extends GetxController {
       );
       print("RES LENGTH = ${res.length}");
       print("FULL RESPONSE = $response");
-      res.value = response['data'];
+      if (response is List) {
+        res.value = response;
+      } else if (response is Map && response['data'] is List) {
+        res.value = response['data'];
+      } else {
+        res.value = [];
+      }
       return res;
     } catch (e) {
       print('Error fetching volunteer applications: $e');

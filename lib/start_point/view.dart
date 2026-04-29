@@ -8,24 +8,22 @@ class StartPoint extends StatelessWidget {
   StartPoint({super.key});
   final entryVeiwCntrl = Get.put(EntryViewCntrl());
 
-  List<Widget> pages = [HomeScreen(),
-  MapScreen()];
+  final List<Widget> pages = [HomeScreen(), MapScreen()];
   
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: pages[entryVeiwCntrl.currentIndex.value],
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: (index) {
-          entryVeiwCntrl.setIndex(index);
-        },
-        currentIndex: entryVeiwCntrl.currentIndex.value,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+    return Obx(
+      () => Scaffold(
+        body: pages[entryVeiwCntrl.currentIndex.value],
+        bottomNavigationBar: BottomNavigationBar(
+          onTap: entryVeiwCntrl.setIndex,
+          currentIndex: entryVeiwCntrl.currentIndex.value,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          ],
+        ),
       ),
     );
   }

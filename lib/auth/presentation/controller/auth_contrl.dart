@@ -74,6 +74,8 @@ class AuthController extends GetxController {
 
         StorageHelper().saveData('token', resp.accessToken);
         StorageHelper().saveData('email', loginModel.user!.email);
+        StorageHelper().saveData('role', resp.user?.role);
+        StorageHelper().saveData('userId', resp.user?.id);
 
         print(
           'token ---------------------> ${StorageHelper().readData('token')}',
@@ -82,9 +84,10 @@ class AuthController extends GetxController {
           'email ---------------------> ${StorageHelper().readData('email')}',
         );
         if (resp.user?.role == 'admin') {
-          Get.to(AdminPanelScreen());
+          Get.offAll(() => AdminPanelScreen());
+          return;
         }
-        Get.to(RoleSelectionScreen());
+        Get.offAll(() => RoleSelectionScreen());
       } catch (e) {
         print("error reason -> $e");
       }
@@ -109,7 +112,10 @@ class AuthController extends GetxController {
         if (resp.accessToken != null) {
           StorageHelper().saveData('token', resp.accessToken);
         }
-        Get.to(RoleSelectionScreen());
+        StorageHelper().saveData('email', signupModel.user!.email);
+        StorageHelper().saveData('role', resp.user?.role ?? 'user');
+        StorageHelper().saveData('userId', resp.user?.id);
+        Get.offAll(() => RoleSelectionScreen());
       } catch (e) {
         // ErrorHandler.exception(e);
         print("error reason -> $e");

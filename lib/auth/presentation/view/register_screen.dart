@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_source_code/auth/presentation/controller/auth_contrl.dart';
-import 'package:fyp_source_code/auth/presentation/view/role_selection_screen.dart';
 import 'package:fyp_source_code/auth/presentation/view/widgets/text_fields.dart';
+import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
@@ -81,7 +81,7 @@ class RegisterScreen extends StatelessWidget {
                   selectionColor: AppColors.grey,
                 ),
                 AppSize.sHeight,
-                getPasswordTextField(),
+                getPasswordTextField(authController),
                 AppSize.mHeight,
                 Obx(
                   () =>
@@ -114,8 +114,9 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ),
                 AppSize.xxxlHeight,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
                       "Already have an account? ",
@@ -123,8 +124,13 @@ class RegisterScreen extends StatelessWidget {
                         color: AppColors.grey,
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () => Get.toNamed('/loginScreen'),
+                    TextButton(
+                      onPressed: () => Get.offNamed(RouteNames.login),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.symmetric(horizontal: AppSize.xs),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       child: Text(
                         'Login',
                         style: AppTextStyling.body_12S.copyWith(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_source_code/auth/presentation/controller/auth_contrl.dart';
 import 'package:fyp_source_code/auth/presentation/view/widgets/text_fields.dart';
+import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
@@ -71,7 +72,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                   AppSize.mHeight,
 
-                  getPasswordTextField(),
+                  getPasswordTextField(authController),
                   Obx(
                     () =>
                         authController.emailError.value.isNotEmpty
@@ -142,8 +143,9 @@ class LoginScreen extends StatelessWidget {
 
                   AppSize.mHeight,
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
 
                     children: [
                       Text(
@@ -154,7 +156,12 @@ class LoginScreen extends StatelessWidget {
                       ),
 
                       TextButton(
-                        onPressed: () => Get.toNamed('/register'),
+                        onPressed: () => Get.offNamed(RouteNames.signup),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: AppSize.xs),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         child: Text(
                           'Create Account',
                           style: AppTextStyling.body_12S.copyWith(

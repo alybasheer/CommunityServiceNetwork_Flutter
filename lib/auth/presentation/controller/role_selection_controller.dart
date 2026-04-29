@@ -1,5 +1,6 @@
 import 'package:fyp_source_code/auth/presentation/view/admin_verification_screen.dart';
-import 'package:fyp_source_code/volunteer_side/home/presentation/view/home_screen.dart';
+import 'package:fyp_source_code/routing/route_names.dart';
+import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:get/get.dart';
 
 class RoleSelectionController extends GetxController {
@@ -10,20 +11,23 @@ class RoleSelectionController extends GetxController {
   }
 
   void navigateBasedOnRole() {
+    final currentRole = StorageHelper().readData('role');
+
     switch (selectedRole.value) {
-      case 'request_help':
-        // Navigate to request help flow
-        // Get.toNamed('/requestHelp');
-        Get.to(HomeScreen());
+      case 'requestHelp':
+        Get.toNamed(RouteNames.requestHelp);
         break;
       case 'volunteer':
-        // Navigate to volunteer onboarding or main app
-        // Get.toNamed('/adminVerification');
-        Get.to(AdminVerificationScreen());
+        if (currentRole == 'volunteer') {
+          Get.toNamed(RouteNames.startPoint);
+        } else {
+          Get.to(AdminVerificationScreen());
+        }
         break;
       case 'admin':
-        // Navigate to admin verification form
-        Get.toNamed('/adminPanel');
+        if (currentRole == 'admin') {
+          Get.toNamed('/adminPanel');
+        }
         break;
     }
   }

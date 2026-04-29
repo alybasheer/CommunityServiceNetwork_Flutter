@@ -3,6 +3,7 @@ import 'package:fyp_source_code/auth/presentation/controller/auth_contrl.dart';
 import 'package:fyp_source_code/auth/presentation/controller/role_selection_controller.dart';
 import 'package:fyp_source_code/auth/presentation/view/widgets/role_card.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
+import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 import 'package:get/get.dart';
 
@@ -16,6 +17,9 @@ class RoleSelectionScreen extends StatelessWidget {
           AuthController
         >(); // auth controller find karna ha<> representing type , () will create instance of it when find
     final roleCntrl = Get.find<RoleSelectionController>();
+    final currentRole = StorageHelper().readData('role');
+    final isAdmin = currentRole == 'admin';
+    final isVolunteer = currentRole == 'volunteer';
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -46,18 +50,21 @@ class RoleSelectionScreen extends StatelessWidget {
                 'volunteer',
                 Icons.handshake,
                 Colors.blue[700]!,
-                'Verify as Volunteer',
-                'Browse and respond to\nhelp requests in your area',
+                isVolunteer ? 'Volunteer Dashboard' : 'Verify as Volunteer',
+                isVolunteer
+                    ? 'Browse and respond to\nhelp requests in your area'
+                    : 'Submit your verification\nrequest to become a volunteer',
               ),
-              AppSize.lHeight,
-              // Admin Verification Card
-              roleCard(
-                'admin',
-                Icons.security,
-                Colors.green[700]!,
-                'Admin Access',
-                'Monitor and manage community\nresponse activities',
-              ),
+              if (isAdmin) ...[
+                AppSize.lHeight,
+                roleCard(
+                  'admin',
+                  Icons.security,
+                  Colors.green[700]!,
+                  'Admin Access',
+                  'Monitor and manage community\nresponse activities',
+                ),
+              ],
             ],
           ),
         ),

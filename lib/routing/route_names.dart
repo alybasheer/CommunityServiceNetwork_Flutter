@@ -8,4 +8,5 @@ class RouteNames {
   static const String startPoint = '/startPoint';
   static const String adminVerification = '/adminVerification';
   static const String adminPanel = '/adminPanel';
+  static const String requestHelp = '/requestHelp';
 }

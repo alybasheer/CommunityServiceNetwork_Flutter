@@ -9,7 +9,7 @@ class VolunteerVerificationRepo {
   /// Expects the API to return a List<Map<String, dynamic>>.
   Future<List<VolunteerVerification>> fetchAll() async {
     final response = await _dioHelper.get(
-      url: ApiNames.voulnteerVerification,
+      url: ApiNames.voulnteerApplications,
       isauthorize: true,
     );
 
@@ -28,23 +28,23 @@ class VolunteerVerificationRepo {
     } else {
       throw Exception('Unexpected response format for verifications');
     }
-  }
+}
 
   /// Submit a new volunteer verification (apply)
-Future<List<VolunteerVerification>> submit(Object? reqBody) async {
+Future<VolunteerVerification> submit(Object? reqBody) async {
   final response = await _dioHelper.post(
     url: ApiNames.voulnteerVerification,
     reqBody: reqBody,
     isauthorize: true,
   );
 
-  if (response is List) {
-    return response
-        .map((e) => VolunteerVerification.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
-  } else {
-    throw Exception('Expected a list from API, got ${response.runtimeType}');
+  if (response is Map<String, dynamic>) {
+    return VolunteerVerification.fromJson(response);
+  } else if (response is Map) {
+    return VolunteerVerification.fromJson(Map<String, dynamic>.from(response));
   }
+
+  throw Exception('Expected an object from API, got ${response.runtimeType}');
 }
 
 }

@@ -61,30 +61,33 @@ Column HomeCard() {
   );
 }
 
-Container statistics(String count, String label) {
+Widget statistics(String count, String label) {
   return Container(
-    height: AppSize.sectionxs,
-    // width: AppSize.sectionSmall,
+    constraints: BoxConstraints(
+      minWidth: AppSize.containerSmall * 0.65,
+      minHeight: AppSize.hp(8),
+    ),
+    padding: EdgeInsets.symmetric(horizontal: AppSize.s, vertical: AppSize.sH),
     decoration: BoxDecoration(
       color: AppColors.safetyBlue.withValues(blue: .9),
       borderRadius: BorderRadius.circular(10),
     ),
-    child: Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-
-        children: [
-          Text(
-            count,
-            style: AppTextStyling.title_16M.copyWith(color: AppColors.white),
-          ),
-          Text(
-            label,
-            style: AppTextStyling.body_14M.copyWith(color: AppColors.white),
-          ),
-        ],
-      ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          count,
+          style: AppTextStyling.title_16M.copyWith(color: AppColors.white),
+        ),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTextStyling.body_14M.copyWith(color: AppColors.white),
+        ),
+      ],
     ),
   );
 }

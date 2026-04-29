@@ -6,8 +6,6 @@ import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 import 'package:fyp_source_code/utilities/reuse_widgets/text_field.dart';
 import 'package:get/get.dart';
 
-final authController = Get.find<AuthController>();
-
 TextEditingController textControl = TextEditingController();
 
 Widget getTextField({
@@ -24,7 +22,7 @@ Widget getTextField({
         hintText,
         style: AppTextStyling.body_12S.copyWith(color: AppColors.lightGrey),
       ),
-      onChange: (value) => authController.isFieldEmpt.value = value.isEmpty,
+      onChange: (value) {},
       borderType: OutlineInputBorder(
         borderSide: BorderSide(color: AppColors.steelBlue),
         borderRadius: BorderRadius.circular(8),
@@ -41,7 +39,7 @@ Widget getTextField({
   );
 }
 
-Widget getPasswordTextField() {
+Widget getPasswordTextField(AuthController authController) {
   return SizedBox(
     height: AppSize.xxl * 2,
     child: Obx(
