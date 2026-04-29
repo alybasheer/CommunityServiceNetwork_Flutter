@@ -6,7 +6,7 @@ Options getOptions({bool isFormData = false, bool isauthorize = false}) {
   String? token = StorageHelper().readData('token');
   Map<String, dynamic> getheader() => {"Authorization": "Bearer $token"};
   return Options(
-    
+
     contentType: isFormData ? null : 'application/json',
     headers: {
       if (isauthorize) ...getheader(),
@@ -16,7 +16,7 @@ Options getOptions({bool isFormData = false, bool isauthorize = false}) {
     receiveTimeout: const Duration(seconds: 30),
     receiveDataWhenStatusError: true,
     validateStatus: (status) => status! < 500,
-    
+
   );
 }
 

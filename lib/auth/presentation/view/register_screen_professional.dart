@@ -9,12 +9,12 @@ import 'package:get/get.dart';
 class RegisterScreenProfessional extends StatelessWidget {
   const RegisterScreenProfessional({super.key});
 
-  @override
+
   Widget build(BuildContext context) {
     final authController = Get.put(AuthController());
 
     return Scaffold(
-      backgroundColor: AppColors.pureWhite,
+
       appBar: AppBar(
         backgroundColor: AppColors.pureWhite,
         elevation: 0,

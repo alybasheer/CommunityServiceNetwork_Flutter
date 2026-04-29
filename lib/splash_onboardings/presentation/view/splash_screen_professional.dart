@@ -132,7 +132,7 @@ class SplashScreenProfessional extends StatelessWidget {
   String _getStatusMessage(UserStatus status) {
     switch (status) {
       case UserStatus.notAuthenticated:
-        return 'Preparing login...';
+        return 'Welcome To CERD...';
       case UserStatus.authenticated:
         return 'Welcome back! Loading your profile...';
       case UserStatus.pending:

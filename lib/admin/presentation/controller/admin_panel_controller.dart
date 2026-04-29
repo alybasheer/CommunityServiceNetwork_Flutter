@@ -1,10 +1,10 @@
-import 'package:fyp_source_code/auth/presentation/controller/admin_verification_controller.dart';
+import 'package:fyp_source_code/volunteer_side/volunteer_verification/presentation/controller/volunteer_verification_controller.dart';
 import 'package:fyp_source_code/network/api_service.dart';
 import 'package:fyp_source_code/services/api_names.dart';
 import 'package:get/get.dart';
 
 class AdminPanelController extends GetxController {
-  late final AdminVerificationController verificationCtrl;
+  late final VolunteerVerificationController verificationCtrl;
   final dioHelper = DioHelper();
   var res = <dynamic>[].obs;
 
@@ -13,7 +13,7 @@ class AdminPanelController extends GetxController {
     super.onInit();
     fetchVolunteerApplications();
 
-    verificationCtrl = Get.put(AdminVerificationController());
+    verificationCtrl = Get.put(VolunteerVerificationController());
   }
 
   Future<dynamic> fetchVolunteerApplications() async {
@@ -31,24 +31,23 @@ class AdminPanelController extends GetxController {
   }
 
   Future<dynamic> approveVolunteer(String userId) {
-    return dioHelper.post(
-      url: ApiNames.approveVolunteer(userId),
-      isauthorize: true,
-    ).then((value) {
-      fetchVolunteerApplications();
-      res.refresh();
-      Get.back();
-    });
+    return dioHelper
+        .post(url: ApiNames.approveVolunteer(userId), isauthorize: true)
+        .then((value) {
+          fetchVolunteerApplications();
+          res.refresh();
+          Get.back();
+        });
   }
+
   Future<dynamic> rejectVolunteer(String userId) {
-    return dioHelper.post(
-      url: ApiNames.rejectVolunteer(userId),
-      isauthorize: true,
-    ).then((value){
-      fetchVolunteerApplications();
-      res.refresh();
-      Get.back();
-    });
+    return dioHelper
+        .post(url: ApiNames.rejectVolunteer(userId), isauthorize: true)
+        .then((value) {
+          fetchVolunteerApplications();
+          res.refresh();
+          Get.back();
+        });
   }
 
   void approve(String id, int index) {

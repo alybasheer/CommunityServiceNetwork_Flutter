@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_source_code/auth/data/models/admin_verification_request.dart';
-import 'package:fyp_source_code/auth/data/repo/volunteer_verification_repo.dart';
+import 'package:fyp_source_code/volunteer_side/volunteer_verification/data/model/admin_verification_request.dart';
+import 'package:fyp_source_code/volunteer_side/volunteer_verification/data/repo/volunteer_verification_repo.dart';
 import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
 import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:fyp_source_code/utilities/validators/validators.dart';

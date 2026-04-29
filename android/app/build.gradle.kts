@@ -28,7 +28,7 @@ android {
         applicationId = "com.example.fyp_source_code"
 
         // REQUIRED FIX for your error
-        minSdk = 22
+        minSdk = flutter.minSdkVersion
 
         targetSdk = 36
 

@@ -2,6 +2,7 @@ import 'package:fyp_source_code/network/exceptions.dart';
 import 'package:get/get.dart';
 
 class ErrorHandler {
+
   static void exception(Object e) {
     if (e is Exception && e is AppExceptions) {
       final ex = e;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fyp_source_code/auth/presentation/controller/admin_verification_controller.dart';
+import 'package:fyp_source_code/volunteer_side/volunteer_verification/presentation/controller/volunteer_verification_controller.dart';
 import 'package:fyp_source_code/auth/presentation/view/widgets/verification_image_picker.dart';
 import 'package:fyp_source_code/auth/presentation/view/widgets/verification_submit_button.dart';
 import 'package:fyp_source_code/auth/presentation/view/widgets/verification_text_field.dart';
@@ -14,10 +14,10 @@ class AdminVerificationScreenProfessional extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(AdminVerificationController());
+    final controller = Get.put(VolunteerVerificationController());
 
     return Scaffold(
-      backgroundColor: AppColors.pureWhite,
+
       appBar: AppBar(
         backgroundColor: AppColors.pureWhite,
         elevation: 0,
@@ -99,7 +99,6 @@ class AdminVerificationScreenProfessional extends StatelessWidget {
                     keyboardType: TextInputType.emailAddress,
                     prefixIcon: Icons.email_outlined,
                     validator: (val) => controller.validateEmail(val),
-                    
                   ),
 
                   // EXPERTISE FIELD

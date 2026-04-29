@@ -1,11 +1,14 @@
-abstract class AppExceptions implements Exception{
+ abstract class AppExceptions implements Exception{
  final String msg;
  final String? details;
- AppExceptions(this.msg,[this.details]);
+ AppExceptions(this.msg,this.details);
+
+
  }
- class FetchDataExceptions extends AppExceptions{
- FetchDataExceptions([String? msg]) : super (msg!, 'Error During Communication: ');
-}
+ class FetchDataExceptions extends AppExceptions {
+  FetchDataExceptions([String? msg]) : super(msg!, '');
+
+ }
  class BadRequestException  extends AppExceptions{
  BadRequestException ([String? msg]) : super (msg!, 'Invalid Request: ');
 }

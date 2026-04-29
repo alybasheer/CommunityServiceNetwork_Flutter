@@ -1,8 +1,7 @@
 class ApiNames {
-  static const baseUrl = 'http://192.168.100.236:3000/';
+  static const baseUrl = 'http://localhost:3000/';
   static const signup = 'authentication/signup';
   static const login = 'authentication/login';
-  static const googleLogin = 'authentication/google-login';
   static const voulnteerVerification = 'volunteer/apply';
   static const voulnteerApplications = 'admin/volunteer-applications';
   static String approveVolunteer(String id) =>

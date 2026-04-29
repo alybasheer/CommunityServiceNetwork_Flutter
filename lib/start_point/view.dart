@@ -5,6 +5,7 @@ import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 import 'package:fyp_source_code/volunteer_side/home/presentation/view/home_screen.dart';
 import 'package:fyp_source_code/volunteer_side/map/presentation/view/map_screen.dart';
+import 'package:fyp_source_code/volunteer_side/profile/presentation/view/profile_screen.dart';
 import 'package:get/get.dart';
 
 class StartPoint extends StatelessWidget {
@@ -14,7 +15,7 @@ class StartPoint extends StatelessWidget {
     const HomeScreen(),
     MapScreen(),
     _buildCommunityPage(),
-    _buildProfilePage(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -34,7 +35,7 @@ class StartPoint extends StatelessWidget {
         color: AppColors.pureWhite,
         boxShadow: [
           BoxShadow(
-            color: AppColors.darkGray.withOpacity(0.1),
+            color: const Color.fromRGBO(33, 33, 33, 0.1),
             blurRadius: 12,
             offset: const Offset(0, -2),
           ),
@@ -123,24 +124,6 @@ class StartPoint extends StatelessWidget {
       ),
       body: Center(
         child: Text('Community Page', style: AppTextStyling.title_18M),
-      ),
-    );
-  }
-
-  static Widget _buildProfilePage() {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.safetyBlue,
-        title: Text(
-          'Profile',
-          style: AppTextStyling.title_18M.copyWith(
-            color: AppColors.pureWhite,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-      body: Center(
-        child: Text('Profile Page', style: AppTextStyling.title_18M),
       ),
     );
   }

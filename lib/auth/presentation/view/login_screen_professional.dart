@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fyp_source_code/auth/presentation/controller/auth_contrl.dart';
 import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
@@ -16,7 +15,7 @@ class LoginScreen extends StatelessWidget {
     final authController = Get.put(AuthController());
 
     return Scaffold(
-      backgroundColor: AppColors.pureWhite,
+
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -249,61 +248,6 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                   AppSize.xxxlHeight,
-
-                  // GOOGLE SIGN-IN BUTTON
-                  // Obx(
-                  //   () => SizedBox(
-                  //     width: double.infinity,
-                  //     height: AppSize.buttonHeight,
-                  //     child: ElevatedButton.icon(
-                  //       onPressed:
-                  //           // authController.isLoading.value
-                  //           //     ? null
-                  //           //     : () => authController.loginWithGoogle(),
-                  //       icon: SvgPicture.asset(
-                  //         'assets/icons/googleIcon.svg',
-                  //         width: 24,
-                  //         height: 24,
-                  //         colorFilter: ColorFilter.mode(
-                  //           authController.isLoading.value
-                  //               ? AppColors.lightGrey
-                  //               : AppColors.darkGray,
-                  //           BlendMode.srcIn,
-                  //         ),
-                  //       ),
-                  //       label: Text(
-                  //         'Sign in with Google',
-                  //         style: AppTextStyling.body_14M.copyWith(
-                  //           color:
-                  //               authController.isLoading.value
-                  //                   ? AppColors.lightGrey
-                  //                   : AppColors.darkGray,
-                  //           fontWeight: FontWeight.w600,
-                  //         ),
-                  //       ),
-                  //       style: ElevatedButton.styleFrom(
-                  //         backgroundColor: AppColors.pureWhite,
-                  //         disabledBackgroundColor: AppColors.background,
-                  //         shape: RoundedRectangleBorder(
-                  //           borderRadius: BorderRadius.circular(12),
-                  //           side: BorderSide(
-                  //             color:
-                  //                 authController.isLoading.value
-                  //                     ? AppColors.lightBorderGray
-                  //                     : AppColors.steelBlue,
-                  //             width: 1.5,
-                  //           ),
-                  //         ),
-                  //         elevation: 0,
-                  //         padding: EdgeInsets.symmetric(
-                  //           horizontal: AppSize.m,
-                  //           vertical: AppSize.m,
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                  AppSize.xxlHeight,
                   Center(
                     child: RichText(
                       text: TextSpan(

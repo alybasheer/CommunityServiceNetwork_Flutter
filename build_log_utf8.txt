@@ -1,0 +1,134 @@
+﻿Running Gradle task 'assembleDebug'...                          
+flutter : /C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:6: Error: Expected ';' after this.
+At line:1 char:1
++ flutter build apk --debug > build_log.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (/C:/flutter/pac...';' after this.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+     ^^^^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:22: Error: Expected ';' after this.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                     ^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:25: Error: Variables must be declared using the keywords 
+'const', 'final', 'var' or a type name.
+Try adding the name of the type of the variable or the keyword 'var'.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                        ^^^^^^^^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:25: Error: Expected ';' after this.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                        ^^^^^^^^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:37: Error: Expected a class member, but got 'is'.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                    ^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:44: Error: Expected ';' after this.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                           ^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:60: Error: Expected ';' after this.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                                           ^^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:66: Error: Variables must be declared using the keywords 
+'const', 'final', 'var' or a type name.
+Try adding the name of the type of the variable or the keyword 'var'.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                                                 ^^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:66: Error: Expected ';' after this.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                                                 ^^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:71: Error: Expected a class member, but got ':'.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                                                      ^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:44: Error: 'of' is already declared in this scope.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                           ^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:22: Context: Previous declaration of 'of'.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                     ^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:1: Error: Type 'Your' not found.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:14: Error: Type 'version' not found.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+             ^^^^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:40: Error: Type 'out' not found.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                       ^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:47: Error: 'date.Please' can't be used as a type because 
+'date' doesn't refer to an import prefix.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                              ^^^^^^^^^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:1: Error: 'Your' isn't a type.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:14: Error: 'version' isn't a type.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+             ^^^^^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:40: Error: 'out' isn't a type.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                       ^^^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3884:9: Error: Constructor is marked 'const' so all fields 
+must be final.
+  const SliverToBoxAdapter({super.key, super.child});
+        ^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:6: Context: Field isn't final, but constructor is 'const'.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+     ^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:22: Context: Field isn't final, but constructor is 
+'const'.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                     ^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:25: Context: Field isn't final, but constructor is 
+'const'.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                        ^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:60: Context: Field isn't final, but constructor is 
+'const'.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                                           ^
+/C:/flutter/packages/flutter/lib/src/widgets/basic.dart:3885:66: Context: Field isn't final, but constructor is 
+'const'.
+Your current version of Antigravity is out of date. Please visit https://antigravity.google/download to download and 
+install the latest version.
+                                                                 ^
+Target kernel_snapshot_program failed: Exception
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFlutterBuildDebug'.
+> Process 'command 'C:\flutter\bin\flutter.bat'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 15s
+Running Gradle task 'assembleDebug'...                             15.6s
+Gradle task assembleDebug failed with exit code 1

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fyp_source_code/services/location_services.dart';
 import 'package:fyp_source_code/volunteer_side/map/data/map_repo.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -35,51 +36,68 @@ class MapCntrl extends GetxController {
       if (permission == LocationPermission.denied) {
         // Request permission
         permission = await Geolocator.requestPermission();
-        print('📍 Location permission requested: $permission');
+        print('Location permission requested: $permission');
       }
 
       if (permission == LocationPermission.deniedForever) {
-        print('❌ Location permission denied forever! Opening app settings...');
-        // Permission denied forever, open app settings
+        print(' Location permission denied forever! Opening app settings...');
         await Geolocator.openLocationSettings();
         return;
       }
 
       if (permission == LocationPermission.whileInUse ||
           permission == LocationPermission.always) {
-        print('✅ Location permission granted! Starting stream...');
+        print('Location permission granted! Fetching fresh location...');
+        
+       Position pos =  await getCurrentLocation();
+        currentLatLng.value = LatLng(pos.latitude, pos.longitude);
+        await mapRepo.updateCurrentLocation(lat: pos.latitude, long: pos.longitude);
         _startPositionStream();
       }
     } catch (e) {
-      print('❌ Error requesting location permission: $e');
+      print('Error requesting location permission: $e');
     }
   }
 
-  /// Start receiving position updates
+  /// Start receiving continuous position updates
   void _startPositionStream() {
     positionStream = Geolocator.getPositionStream(
       locationSettings: AndroidSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: 0, // emit immediately for real-time response
-        forceLocationManager: true,
-        timeLimit: Duration(seconds: 300),
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 5,
+        forceLocationManager: false,
+        timeLimit: Duration(seconds: 10),
       ),
-    ).listen((Position pos) async {
-      // Update UI immediately
-      currentLatLng.value = LatLng(pos.latitude, pos.longitude);
-
-      // Send to backend in background (non-blocking)
-      Future.microtask(() async {
-        try {
-          await mapRepo.updateCurrentLocation(
-            lat: pos.latitude,
-            long: pos.longitude,
-          );
-          print("Location sent: ${pos.latitude}, ${pos.longitude}");
-        } catch (e) {
-          print("Error sending location: $e");
+    ).listen(
+      (Position pos) async {
+        // Filter out inaccurate readings
+        if (pos.accuracy > 50) {
+          print('⚠️ Low accuracy (${pos.accuracy}m) - skipping');
+          return;
         }
-      });
-    });
+
+        print(
+          '📍 Stream device location: ${pos.latitude}, ${pos.longitude}, Accuracy: ${pos.accuracy}m',
+        );
+        currentLatLng.value = LatLng(pos.latitude, pos.longitude);
+
+        Future.microtask(() async {
+          try {
+            await mapRepo.updateCurrentLocation(
+              lat: pos.latitude,
+              long: pos.longitude,
+            );
+            print(
+              "✅ Location sent to backend: ${pos.latitude}, ${pos.longitude}",
+            );
+          } catch (e) {
+            print("❌ Error sending location: $e");
+          }
+        });
+      },
+      onError: (e) {
+        print("❌ GPS Stream Error: $e");
+      },
+    );
   }
 }

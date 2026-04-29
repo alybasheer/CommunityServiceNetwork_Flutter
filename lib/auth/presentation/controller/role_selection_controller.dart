@@ -1,5 +1,5 @@
-import 'package:fyp_source_code/auth/presentation/view/admin_verification_screen_professional.dart';
-import 'package:fyp_source_code/volunteer_side/home/presentation/view/home_screen.dart';
+import 'package:fyp_source_code/routing/route_names.dart';
+import 'package:fyp_source_code/volunteer_side/volunteer_verification/presentation/view/admin_verification_screen.dart';
 import 'package:get/get.dart';
 
 class RoleSelectionController extends GetxController {
@@ -12,18 +12,10 @@ class RoleSelectionController extends GetxController {
   void navigateBasedOnRole() {
     switch (selectedRole.value) {
       case 'request_help':
-        // Navigate to request help flow
-        // Get.toNamed('/requestHelp');
-        Get.to(HomeScreen());
+        Get.toNamed(RouteNames.requestHome);
         break;
       case 'volunteer':
-        // Navigate to volunteer onboarding or main app
-        // Get.toNamed('/adminVerification');
-        Get.to(AdminVerificationScreenProfessional());
-        break;
-      case 'admin':
-        // Navigate to admin verification form
-        Get.toNamed('/adminPanel');
+        Get.to(VolunteerVerficationScreen());
         break;
     }
   }

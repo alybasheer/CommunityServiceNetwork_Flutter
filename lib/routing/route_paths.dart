@@ -1,6 +1,5 @@
 import 'package:fyp_source_code/admin/presentation/view/admin_panel_screen.dart';
 import 'package:fyp_source_code/auth/presentation/bindings/auth_bindings.dart';
-import 'package:fyp_source_code/auth/presentation/view/admin_verification_screen_professional.dart';
 import 'package:fyp_source_code/auth/presentation/view/login_screen_professional.dart';
 import 'package:fyp_source_code/auth/presentation/view/register_screen_professional.dart';
 import 'package:fyp_source_code/auth/presentation/view/role_selection_screen.dart';
@@ -13,6 +12,9 @@ import 'package:fyp_source_code/start_point/view.dart';
 import 'package:fyp_source_code/volunteer_side/coordination/presentation/view/coordination_screen.dart';
 import 'package:fyp_source_code/volunteer_side/home/presentation/view/home_screen.dart';
 import 'package:fyp_source_code/volunteer_side/map/presentation/view/map_screen.dart';
+import 'package:fyp_source_code/volunteer_side/volunteer_verification/presentation/view/admin_verification_screen.dart';
+import 'package:fyp_source_code/volunteer_side/profile/presentation/view/profile_screen.dart';
+import 'package:fyp_source_code/request_side/home/presentation/view/request_home_screen.dart';
 import 'package:get/get.dart';
 
 class RoutePaths {
@@ -44,7 +46,7 @@ class RoutePaths {
     ),
     GetPage(
       name: RouteNames.adminVerification,
-      page: () => AdminVerificationScreenProfessional(),
+      page: () => VolunteerVerficationScreen(),
     ),
     GetPage(name: RouteNames.waitingScreen, page: () => WaitingScreen()),
 
@@ -63,10 +65,15 @@ class RoutePaths {
     ),
     GetPage(name: RouteNames.map, page: () => MapScreen()),
 
+    // REQUEST SCREENS
+    GetPage(name: RouteNames.requestHome, page: () => const RequestHomeScreen()),
+
     // ADMIN SCREENS
     GetPage(name: RouteNames.adminPanel, page: () => AdminPanelScreen()),
 
     // MISC SCREENS
     GetPage(name: RouteNames.startPoint, page: () => StartPoint()),
+    // Profile
+    GetPage(name: RouteNames.profile, page: () => const ProfileScreen()),
   ];
 }

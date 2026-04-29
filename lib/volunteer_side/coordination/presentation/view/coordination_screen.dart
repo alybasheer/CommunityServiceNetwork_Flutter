@@ -53,7 +53,7 @@ class CoordinationScreen extends StatelessWidget {
                 controller: controller.searchController,
                 onChanged: controller.updateSearch,
                 decoration: InputDecoration(
-                  hintText: '🔍 Search volunteers...',
+                  hintText: 'Search volunteers...',
                   hintStyle: AppTextStyling.body_12S.copyWith(
                     color: Colors.grey[500],
                   ),

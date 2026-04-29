@@ -96,7 +96,10 @@ class DioHelper {
         throw FetchDataExceptions('Error : $errorMsg');
       }
     } on DioException catch (e) {
+
       throw FetchDataExceptions(e.message ?? 'Network Error');
+      
     }
+
   }
 }
