@@ -24,6 +24,9 @@ class ChatProvider extends GetxController {
   final Rx<String?> currentChatUserId = Rx<String?>(null);
   final RxMap<String, bool> typingUsers = RxMap<String, bool>();
 
+  Stream<Map<String, dynamic>> get flowEventStream =>
+      _socketService.flowEventStream;
+
   Timer? _typingTimer;
 
   @override
@@ -339,8 +342,8 @@ class ChatProvider extends GetxController {
       final cached = _storage.readData(_getCacheKey(userId));
       if (cached != null && cached is List) {
         final messages =
-            (cached as List)
-                .cast<Map<String, dynamic>>()
+            cached
+                .map((e) => Map<String, dynamic>.from(e as Map))
                 .map((json) => Message.fromJson(json))
                 .toList();
         print('📦 Loaded ${messages.length} cached messages for $userId');

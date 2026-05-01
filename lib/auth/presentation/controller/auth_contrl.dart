@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fyp_source_code/auth/data/models/signin_model.dart';
 import 'package:fyp_source_code/auth/data/repo/login-_repo.dart';
 import 'package:fyp_source_code/auth/data/repo/signup_repo.dart';
+import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
 import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:fyp_source_code/utilities/validators/validators.dart';
@@ -140,10 +141,30 @@ class AuthController extends GetxController {
       // Store credentials
       StorageHelper().saveData('token', resp.accessToken);
       StorageHelper().saveData('email', resp.user!.email);
+      StorageHelper().saveData('profile_email', resp.user!.email);
       StorageHelper().saveData('userId', resp.user!.id);
-      if (resp.user!.role != null) {
-        StorageHelper().saveData('role', resp.user!.role);
-        userRole.value = resp.user!.role!;
+      if (resp.user!.role != null && resp.user!.role!.trim().isNotEmpty) {
+        StorageHelper().saveData('role', resp.user!.role!.trim());
+        userRole.value = resp.user!.role!.trim();
+      }
+      if (resp.user!.verificationStatus != null &&
+          resp.user!.verificationStatus!.trim().isNotEmpty) {
+        StorageHelper().saveData(
+          'verificationStatus',
+          resp.user!.verificationStatus!.trim(),
+        );
+      }
+      if ((resp.user!.fullName ?? resp.user!.username) != null) {
+        StorageHelper().saveData(
+          'profile_name',
+          (resp.user!.fullName ?? resp.user!.username)!.trim(),
+        );
+      }
+      if (resp.user!.location != null) {
+        StorageHelper().saveData(
+          'profile_location',
+          resp.user!.location!.trim(),
+        );
       }
 
       // Debug logs
@@ -156,30 +177,27 @@ class AuthController extends GetxController {
       ToastHelper.showSuccess('Login successful!');
 
       // Navigate based on role and verification status
-      Future.delayed(Duration(milliseconds: 500), () {
+      Future.delayed(Duration(milliseconds: 500), () async {
         final userRole = resp.user!.role?.toLowerCase() ?? '';
         print('🔍 Navigating user with role: $userRole');
 
         // Admin users go directly to admin panel
         if (userRole == 'admin') {
           print('👨‍💼 Admin user detected - Navigating to admin panel');
-          Get.offAllNamed('/adminPanel');
+          Get.offAllNamed(RouteNames.adminPanel);
+        } else if (userRole == 'requestee' ||
+            userRole == 'request_help' ||
+            userRole == 'requesthelp') {
+          Get.offAllNamed(RouteNames.requestHome);
         } else {
-          // For volunteers: check cached verification status
-          // If already verified, go directly to startPoint
-          // Otherwise go to splash to check/fetch status
-          final cachedStatus =
-              StorageHelper().readData('verificationStatus')?.toString() ?? '';
-          print('👤 Volunteer user - Cached status: $cachedStatus');
-
-          if (cachedStatus == 'verified' || cachedStatus == 'approved') {
+          if (userRole == 'volunteer') {
             print('✅ Already verified - Navigating directly to startPoint');
-            Get.offAllNamed('/startPoint');
+            await Get.offAllNamed(RouteNames.startPoint);
           } else {
             print(
               '📡 Status unknown/pending - Navigating to splash for fresh check',
             );
-            Get.offAllNamed('/splash');
+            Get.offAllNamed(RouteNames.splash);
           }
         }
       });
@@ -227,8 +245,30 @@ class AuthController extends GetxController {
       // Store credentials
       StorageHelper().saveData('token', resp.accessToken);
       StorageHelper().saveData('email', resp.user?.email);
-      if (resp.user?.id != null) {
-        StorageHelper().saveData('userId', resp.user!.id);
+      StorageHelper().saveData('profile_email', resp.user?.email);
+      StorageHelper().saveData('userId', resp.user?.id);
+      if (resp.user?.role != null && resp.user!.role!.trim().isNotEmpty) {
+        StorageHelper().saveData('role', resp.user!.role!.trim());
+        userRole.value = resp.user!.role!.trim();
+      }
+      if (resp.user?.verificationStatus != null &&
+          resp.user!.verificationStatus!.trim().isNotEmpty) {
+        StorageHelper().saveData(
+          'verificationStatus',
+          resp.user!.verificationStatus!.trim(),
+        );
+      }
+      if ((resp.user?.fullName ?? resp.user?.username) != null) {
+        StorageHelper().saveData(
+          'profile_name',
+          (resp.user?.fullName ?? resp.user?.username)!.trim(),
+        );
+      }
+      if (resp.user?.location != null) {
+        StorageHelper().saveData(
+          'profile_location',
+          resp.user!.location!.trim(),
+        );
       }
 
       print('✅ Registration successful');
@@ -238,7 +278,7 @@ class AuthController extends GetxController {
 
       // Navigate to role selection
       Future.delayed(Duration(milliseconds: 500), () {
-        Get.offAllNamed('/roleSelection');
+        Get.offAllNamed(RouteNames.roleSelection);
       });
     } catch (e) {
       print('❌ Register error: $e');
@@ -275,10 +315,20 @@ class AuthController extends GetxController {
       StorageHelper().removeData('email');
       StorageHelper().removeData('userId');
       StorageHelper().removeData('role');
+      StorageHelper().removeData('verificationStatus');
+      StorageHelper().removeData('profile_name');
+      StorageHelper().removeData('profile_email');
+      StorageHelper().removeData('profile_location');
+      StorageHelper().removeData('name');
+      StorageHelper().removeData('username');
+      StorageHelper().removeData('city');
+      StorageHelper().removeData('location');
+      StorageHelper().removeData('locationName');
+      StorageHelper().saveData('hasSeenOnboarding', true);
       userRole.value = '';
       clearLoginForm();
       clearRegisterForm();
-      Get.offAllNamed('/loginScreen');
+      Get.offAllNamed(RouteNames.login);
     } catch (e) {
       print('Logout error: $e');
     }

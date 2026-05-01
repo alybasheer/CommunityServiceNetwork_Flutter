@@ -1,4 +1,5 @@
 import 'package:fyp_source_code/network/api_service.dart';
+import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/services/api_names.dart';
 import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:get/get.dart';
@@ -8,167 +9,122 @@ enum UserStatus { authenticated, pending, verified, notAuthenticated }
 class SplashController extends GetxController {
   final RxBool isLoading = true.obs;
   final Rx<UserStatus> userStatus = UserStatus.notAuthenticated.obs;
+
   @override
   void onInit() {
     super.onInit();
     _checkUserStatusAndNavigate();
   }
 
-  /// Check token and user verification status, then navigate accordingly
   Future<void> _checkUserStatusAndNavigate() async {
     try {
-      // Simulate a short delay for splash screen visibility (1.5 seconds)
-      await Future.delayed(Duration(milliseconds: 1500));
+      await Future.delayed(const Duration(milliseconds: 1500));
 
-      // Check if user has seen onboarding (safely handle the value)
-      try {
-        final onboardingData = StorageHelper().readData('hasSeenOnboarding');
-        bool hasSeenOnboarding = false;
-
-        if (onboardingData is bool) {
-          hasSeenOnboarding = onboardingData as bool;
-        } else if (onboardingData is String) {
-          hasSeenOnboarding = onboardingData.toLowerCase() == 'true';
-        }
-
-        // First-time user - show onboarding
-        if (!hasSeenOnboarding) {
-          print('🎬 New user - Showing onboarding');
-          Get.offAllNamed('/onboarding');
-          return;
-        }
-      } catch (e) {
-        print('⚠️ Error checking onboarding: $e - Continuing...');
+      if (!_hasSeenOnboarding()) {
+        Get.offAllNamed(RouteNames.onboarding);
+        return;
       }
 
-      // Get token from storage
-      final token = StorageHelper().readData('token');
-
-      print('🔍 Checking user status...');
-      print('Token: ${token != null ? '✅ Present' : '❌ Not found'}');
-
-      // No token means user is not logged in
-      if (token == null || token.isEmpty) {
-        print('❌ No token found - Navigating to login');
+      final token = StorageHelper().readData('token')?.toString() ?? '';
+      if (token.isEmpty) {
         userStatus.value = UserStatus.notAuthenticated;
-        Get.offAllNamed('/login');
+        Get.offAllNamed(RouteNames.login);
         return;
       }
 
-      // Get user role from storage
-      final role = StorageHelper().readData('role');
-      print('Role: $role');
+      final role =
+          StorageHelper().readData('role')?.toString().toLowerCase() ?? '';
 
-      // Admin users go to admin panel
-      if (role != null && role.toString().toLowerCase() == 'admin') {
-        print('👨‍💼 Admin user - Navigating to admin panel');
-        Get.offAllNamed('/adminPanel');
+      if (role == 'admin') {
+        Get.offAllNamed(RouteNames.adminPanel);
         return;
       }
 
-      // For volunteers: Check and navigate based on verification status
-      print('📡 Checking volunteer verification status...');
+      if (_isRequesteeRole(role)) {
+        userStatus.value = UserStatus.authenticated;
+        Get.offAllNamed(RouteNames.requestHome);
+        return;
+      }
+
       await _fetchAndNavigateBasedOnStatus();
     } catch (e) {
-      print('❌ Error checking user status: $e');
-      print('📊 Stack trace: $e');
-      // On error, try to use cached status instead of going to login
-      try {
-        final cachedStatus =
-            StorageHelper().readData('verificationStatus')?.toString() ?? '';
-        if (cachedStatus.isNotEmpty) {
-          print('📖 Using cached status after error: $cachedStatus');
-          _navigateBasedOnStatus(cachedStatus);
-          return;
-        }
-      } catch (e2) {
-        print('⚠️ Could not use cached status: $e2');
+      final cachedStatus =
+          StorageHelper().readData('verificationStatus')?.toString() ?? '';
+      if (cachedStatus.isNotEmpty) {
+        _navigateBasedOnStatus(cachedStatus);
+        return;
       }
-      // Only go to login if all else fails
+
       userStatus.value = UserStatus.notAuthenticated;
-      Get.offAllNamed('/login');
+      Get.offAllNamed(RouteNames.login);
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// Fetch verification status from backend, cache it, then navigate
+  bool _hasSeenOnboarding() {
+    final onboardingData = StorageHelper().readData('hasSeenOnboarding');
+    if (onboardingData is bool) {
+      return onboardingData;
+    }
+    if (onboardingData is String) {
+      return onboardingData.toLowerCase() == 'true';
+    }
+    return false;
+  }
+
+  bool _isRequesteeRole(String role) {
+    return role == 'requestee' ||
+        role == 'request_help' ||
+        role == 'requesthelp';
+  }
+
   Future<void> _fetchAndNavigateBasedOnStatus() async {
     try {
-      // 1. Try to fetch fresh status from backend
-      print('🌐 Fetching from backend: /volunteer/status');
       final response = await DioHelper().get(
         url: ApiNames.volunteerStatus,
         isauthorize: true,
       );
 
-      print('✅ Backend response received: $response');
-
-      // Parse verification status from response
-      String verificationStatus = '';
-
+      var verificationStatus = '';
       if (response is Map<String, dynamic>) {
-        // Try multiple possible field names from backend
         verificationStatus =
-            response['verificationStatus'] ??
-            response['verification_status'] ??
-            response['status'] ??
-            response['verifyStatus'] ??
+            response['verificationStatus']?.toString() ??
+            response['verification_status']?.toString() ??
+            response['status']?.toString() ??
+            response['verifyStatus']?.toString() ??
             '';
       }
 
-      print('🔍 Parsed status: "$verificationStatus"');
-
-      // 2. Save to local storage for offline use next time
       if (verificationStatus.isNotEmpty) {
         StorageHelper().saveData('verificationStatus', verificationStatus);
-        print('💾 Status cached to local storage');
       }
 
-      // 3. Navigate based on status
       _navigateBasedOnStatus(verificationStatus);
     } catch (e) {
-      print('❌ Backend fetch failed: $e');
-      print('📖 Falling back to cached status from local storage...');
-
-      // Fallback: Use cached status from local storage
       final cachedStatus =
           StorageHelper().readData('verificationStatus')?.toString() ?? '';
-      print('📦 Cached status: "$cachedStatus"');
-
       _navigateBasedOnStatus(cachedStatus);
     }
   }
 
-  /// Navigate based on verification status
   void _navigateBasedOnStatus(String verificationStatus) {
-    if (verificationStatus.isEmpty) {
-      // First time volunteer or status not set
-      print('🆕 No status - Navigating to role selection');
+    final status = verificationStatus.toLowerCase();
+    if (status.isEmpty) {
       userStatus.value = UserStatus.authenticated;
-      Get.offAllNamed('/roleSelection');
-    } else if (verificationStatus.toLowerCase() == 'pending') {
-      // Pending verification - waiting for admin approval
-      print('⏳ Status: pending - Navigating to waiting screen');
+      Get.offAllNamed(RouteNames.roleSelection);
+    } else if (status == 'pending') {
       userStatus.value = UserStatus.pending;
-      Get.offAllNamed('/waitingScreen');
-    } else if (verificationStatus.toLowerCase() == 'verified' ||
-        verificationStatus.toLowerCase() == 'approved') {
-      // Already verified - go straight to home
-      print('✅ Status: verified/approved - Navigating to startPoint');
+      Get.offAllNamed(RouteNames.waitingScreen);
+    } else if (status == 'verified' || status == 'approved') {
       userStatus.value = UserStatus.verified;
-      Get.offAllNamed('/startPoint');
-    } else if (verificationStatus.toLowerCase() == 'rejected' ||
-        verificationStatus.toLowerCase() == 'disapproved') {
-      // Rejected - go back to role selection to retry
-      print('❌ Status: rejected - Navigating to role selection');
+      Get.offAllNamed(RouteNames.startPoint);
+    } else if (status == 'rejected' || status == 'disapproved') {
       userStatus.value = UserStatus.authenticated;
-      Get.offAllNamed('/roleSelection');
+      Get.offAllNamed(RouteNames.roleSelection);
     } else {
-      // Unknown status - treat as regular user
-      print('❓ Unknown status "$verificationStatus" - Going to home');
       userStatus.value = UserStatus.authenticated;
-      Get.offAllNamed('/startPoint');
+      Get.offAllNamed(RouteNames.startPoint);
     }
   }
 }

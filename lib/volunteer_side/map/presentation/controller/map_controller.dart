@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fyp_source_code/services/location_services.dart';
 import 'package:fyp_source_code/volunteer_side/map/data/map_repo.dart';
+import 'package:fyp_source_code/volunteer_side/map/data/map_user_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
@@ -9,6 +10,7 @@ import 'package:latlong2/latlong.dart';
 class MapCntrl extends GetxController {
   final MapRepo mapRepo = MapRepo();
   Rx<LatLng?> currentLatLng = Rx<LatLng?>(null);
+  final RxList<MapUserModel> mapUsers = <MapUserModel>[].obs;
   StreamSubscription<Position>? positionStream;
 
   @override
@@ -48,10 +50,14 @@ class MapCntrl extends GetxController {
       if (permission == LocationPermission.whileInUse ||
           permission == LocationPermission.always) {
         print('Location permission granted! Fetching fresh location...');
-        
-       Position pos =  await getCurrentLocation();
+
+        Position pos = await getCurrentLocation();
         currentLatLng.value = LatLng(pos.latitude, pos.longitude);
-        await mapRepo.updateCurrentLocation(lat: pos.latitude, long: pos.longitude);
+        await mapRepo.updateCurrentLocation(
+          lat: pos.latitude,
+          long: pos.longitude,
+        );
+        await fetchMapUsers();
         _startPositionStream();
       }
     } catch (e) {
@@ -87,6 +93,7 @@ class MapCntrl extends GetxController {
               lat: pos.latitude,
               long: pos.longitude,
             );
+            await fetchMapUsers();
             print(
               "✅ Location sent to backend: ${pos.latitude}, ${pos.longitude}",
             );
@@ -99,5 +106,21 @@ class MapCntrl extends GetxController {
         print("❌ GPS Stream Error: $e");
       },
     );
+  }
+
+  Future<void> fetchMapUsers() async {
+    final latLng = currentLatLng.value;
+    if (latLng == null) {
+      return;
+    }
+    try {
+      final users = await mapRepo.getMapUsers(
+        lat: latLng.latitude,
+        lng: latLng.longitude,
+      );
+      mapUsers.assignAll(users);
+    } catch (e) {
+      print('Error fetching map users: $e');
+    }
   }
 }

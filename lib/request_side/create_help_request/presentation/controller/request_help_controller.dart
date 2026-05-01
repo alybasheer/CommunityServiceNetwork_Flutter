@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:fyp_source_code/request_side/help/presentation/services/request_ai_helper.dart';
+import 'package:fyp_source_code/request_side/create_help_request/presentation/services/request_ai_helper.dart';
+import 'package:fyp_source_code/request_side/create_help_request/data/repo/help_request_repo.dart';
+import 'package:fyp_source_code/services/location_services.dart';
+import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
 
 class RequestHelpController extends GetxController {
   final categories = <String>[
@@ -26,6 +29,8 @@ class RequestHelpController extends GetxController {
   final locationLabel = 'Location Auto-Detected'.obs;
   final isSubmitting = false.obs;
 
+  final HelpRequestRepo _repo = HelpRequestRepo();
+
   List<String> get availableSubcategories {
     return subcategoriesByCategory[selectedCategory.value] ?? <String>[];
   }
@@ -49,27 +54,38 @@ class RequestHelpController extends GetxController {
     }
   }
 
-  void submitRequest() {
+  Future<void> submitRequest() async {
     final description = descriptionController.text.trim();
+    if (selectedCategory.value == null || selectedSubcategory.value == null) {
+      ToastHelper.showError('Please select a category and subcategory.');
+      return;
+    }
     if (description.isEmpty) {
-      Get.snackbar(
-        'Missing info',
-        'Please describe your situation.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastHelper.showError('Please describe your situation.');
       return;
     }
 
     isSubmitting.value = true;
-    Future.delayed(const Duration(milliseconds: 400), () {
-      isSubmitting.value = false;
+
+    try {
+      final position = await getCurrentLocation();
+      final reqBody = {
+        'category': selectedCategory.value,
+        'subCategory': selectedSubcategory.value,
+        'description': description,
+        'image': null,
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+      };
+
+      await _repo.createRequest(reqBody);
       Get.back();
-      Get.snackbar(
-        'Request sent',
-        'We will connect you with helpers soon.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    });
+      ToastHelper.showSuccess('Request sent successfully.');
+    } catch (e) {
+      ToastHelper.showErrorMessage(e);
+    } finally {
+      isSubmitting.value = false;
+    }
   }
 
   @override

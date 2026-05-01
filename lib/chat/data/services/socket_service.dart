@@ -11,10 +11,14 @@ class SocketService {
   final _messageController = StreamController<Message>.broadcast();
   final _typingController = StreamController<Map<String, dynamic>>.broadcast();
   final _connectionController = StreamController<bool>.broadcast();
+  final _flowEventController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   Stream<Message> get messageStream => _messageController.stream;
   Stream<Map<String, dynamic>> get typingStream => _typingController.stream;
   Stream<bool> get connectionStream => _connectionController.stream;
+  Stream<Map<String, dynamic>> get flowEventStream =>
+      _flowEventController.stream;
 
   bool get isConnected => _isInitialized && _socket.connected;
 
@@ -113,6 +117,24 @@ class SocketService {
         print('❌ Error parsing user_typing: $e');
       }
     });
+
+    _listenToFlowEvent('new_help_request');
+    _listenToFlowEvent('help_request_accepted');
+    _listenToFlowEvent('help_request_resolved');
+    _listenToFlowEvent('new_alert');
+  }
+
+  void _listenToFlowEvent(String eventName) {
+    _socket.on(eventName, (data) {
+      try {
+        _flowEventController.add({
+          'event': eventName,
+          'data': data is Map ? Map<String, dynamic>.from(data) : data,
+        });
+      } catch (e) {
+        print('Error parsing $eventName: $e');
+      }
+    });
   }
 
   /// 📤 Send message
@@ -163,6 +185,7 @@ class SocketService {
     _messageController.close();
     _typingController.close();
     _connectionController.close();
+    _flowEventController.close();
     if (_isInitialized) {
       _socket.disconnect();
     }

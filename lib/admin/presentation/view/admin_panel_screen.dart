@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fyp_source_code/admin/presentation/controller/admin_panel_controller.dart';
 import 'package:fyp_source_code/admin/presentation/view/widgets/popup_card.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
-import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/app_bar.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/shimmer_loading.dart';
 import 'package:get/get.dart';
 
 class AdminPanelScreen extends StatelessWidget {
@@ -13,19 +14,26 @@ class AdminPanelScreen extends StatelessWidget {
     final ctrl = Get.put(AdminPanelController());
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Admin Panel', style: AppTextStyling.title_18M),
-        backgroundColor: AppColors.pureWhite,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.amberOrange),
-          onPressed: () => Get.back(),
-        ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: const WeHelpAppBar(
+        title: 'Admin Panel',
+        subtitle: 'Review volunteer applications',
+        showBack: true,
       ),
       body: Obx(() {
         if (ctrl.res.isEmpty) {
-          return const Center(child: Text("Loading..."));
+          return AppShimmer(
+            child: ListView.separated(
+              padding: const EdgeInsets.all(12),
+              itemCount: 6,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder:
+                  (_, __) => const ShimmerListTileSkeleton(
+                    showLeadingCircle: false,
+                    subtitleLines: 1,
+                  ),
+            ),
+          );
         }
 
         return ListView.builder(
@@ -66,7 +74,7 @@ class AdminPanelScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: _getStatusColor(
                           ctrl.res[index]['status'],
-                        ).withOpacity(0.2),
+                        ).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(

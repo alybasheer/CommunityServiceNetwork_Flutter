@@ -29,14 +29,18 @@ class _HelpToggleState extends State<HelpToggle> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: _handleToggle,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: AppSize.m, vertical: AppSize.sH),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSize.m,
+          vertical: AppSize.sH,
+        ),
         decoration: BoxDecoration(
-          color: AppColors.pureWhite,
+          color: scheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.lightBorderGray),
+          border: Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Row(
           children: [
@@ -47,7 +51,7 @@ class _HelpToggleState extends State<HelpToggle> {
                   Text(
                     'Need help too?',
                     style: AppTextStyling.body_14M.copyWith(
-                      color: AppColors.darkGray,
+                      color: scheme.onSurface,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -55,7 +59,7 @@ class _HelpToggleState extends State<HelpToggle> {
                   Text(
                     'Switch to request side and ask for help.',
                     style: AppTextStyling.body_12S.copyWith(
-                      color: AppColors.mediumGray,
+                      color: scheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -67,7 +71,8 @@ class _HelpToggleState extends State<HelpToggle> {
               height: 26,
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: _isOn ? AppColors.reliefGreen : AppColors.lightBorderGray,
+                color:
+                    _isOn ? AppColors.reliefGreen : AppColors.lightBorderGray,
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Align(

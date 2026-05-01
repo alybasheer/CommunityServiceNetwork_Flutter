@@ -4,24 +4,23 @@ import 'package:fyp_source_code/auth/presentation/controller/auth_contrl.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/app_bar.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/shimmer_loading.dart';
 import 'package:get/get.dart';
 
 class RegisterScreenProfessional extends StatelessWidget {
   const RegisterScreenProfessional({super.key});
 
-
+  @override
   Widget build(BuildContext context) {
     final authController = Get.put(AuthController());
 
     return Scaffold(
-
-      appBar: AppBar(
-        backgroundColor: AppColors.pureWhite,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.safetyBlue),
-          onPressed: () => Get.back(),
-        ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: const WeHelpAppBar(
+        title: 'Create Account',
+        subtitle: 'Join WeHelp community',
+        showBack: true,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -36,14 +35,13 @@ class RegisterScreenProfessional extends StatelessWidget {
                   // HEADER
                   Text(
                     'Create Your Account',
-                    style: AppTextStyling.title_30M.copyWith(
-                      color: AppColors.safetyBlue,
-                      fontWeight: FontWeight.bold,
+                    style: AppTextStyling.title_22L.copyWith(
+                      color: AppColors.black,
                     ),
                   ),
-                  AppSize.mHeight,
+                  AppSize.xsHeight,
                   Text(
-                    'Join our community and start making a difference',
+                    'Sign up to get started',
                     style: AppTextStyling.body_12S.copyWith(
                       color: AppColors.grey,
                       height: 1.5,
@@ -221,7 +219,7 @@ class RegisterScreenProfessional extends StatelessWidget {
                       color: Color(0xFFFFF3E0),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: AppColors.amberOrange.withOpacity(0.3),
+                        color: AppColors.amberOrange.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Column(
@@ -333,12 +331,17 @@ class RegisterScreenProfessional extends StatelessWidget {
                         ),
                         child:
                             authController.isLoading.value
-                                ? SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.5,
+                                ? AppShimmer(
+                                  child: Container(
+                                    height: 18,
+                                    width:
+                                        120, // using 120 because "Create Account" is wider
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.35,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 )
                                 : Text(

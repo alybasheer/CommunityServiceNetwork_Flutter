@@ -4,6 +4,7 @@ import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/app_bar.dart';
 import 'package:get/get.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -66,33 +67,22 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.steelBlue,
-        elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.receiverName,
-              style: AppTextStyling.title_16M.copyWith(
-                color: AppColors.pureWhite,
-              ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: WeHelpAppBar(
+        title: widget.receiverName,
+        showBack: true,
+        subtitleWidget: Obx(() {
+          final _ = chatProvider.typingUsers.length;
+          final isTyping = chatProvider.typingUsers[widget.receiverId] == true;
+          return Text(
+            isTyping ? 'typing...' : 'Direct conversation',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyling.body_12S.copyWith(
+              color: Colors.white.withValues(alpha: 0.78),
             ),
-            Obx(() {
-              final typing =
-                  chatProvider.typingUsers[widget.receiverId] ?? false;
-              return typing
-                  ? Text(
-                    "typing...",
-                    style: AppTextStyling.body_12S.copyWith(
-                      color: Colors.white70,
-                    ),
-                  )
-                  : const SizedBox.shrink();
-            }),
-          ],
-        ),
+          );
+        }),
       ),
       body: SafeArea(
         child: Column(
@@ -132,9 +122,12 @@ class _ChatScreenState extends State<ChatScreen> {
             SafeArea(
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.pureWhite,
+                  color: Theme.of(context).colorScheme.surface,
                   border: Border(
-                    top: BorderSide(color: AppColors.lightBorderGray, width: 1),
+                    top: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                      width: 1,
+                    ),
                   ),
                 ),
                 padding: EdgeInsets.symmetric(
@@ -254,7 +247,7 @@ class ChatMessageBubble extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: (isMe ? AppColors.safetyBlue : AppColors.steelBlue)
-                  .withOpacity(0.15),
+                  .withValues(alpha: 0.15),
               blurRadius: 8,
               spreadRadius: 1,
               offset: Offset(0, 2),

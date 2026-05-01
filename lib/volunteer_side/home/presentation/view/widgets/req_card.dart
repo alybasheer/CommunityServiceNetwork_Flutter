@@ -69,7 +69,7 @@ Widget requestCard(
            crossAxisAlignment: CrossAxisAlignment.start,
            children: [
             Text(
-             'Emergency Request \\#${index +1}',
+             title,
              style: AppTextStyling.title_16M.copyWith(
               color: AppColors.darkGray,
               fontWeight: FontWeight.w600,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
-import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/app_bar.dart';
 
 import 'package:fyp_source_code/volunteer_side/map/presentation/controller/map_controller.dart';
 import 'package:fyp_source_code/volunteer_side/map/presentation/view/widgets/build_getlocation.dart';
@@ -17,8 +16,11 @@ class MapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: const WeHelpAppBar(
+        title: 'Emergency Map',
+        subtitle: 'Nearby volunteers and live position',
+      ),
       body: Obx(() {
         final latlng = mapCntrl.currentLatLng.value;
 
@@ -28,23 +30,20 @@ class MapScreen extends StatelessWidget {
           });
         }
 
-        return Stack(children: [buildMap(latlng), getLocation()]);
+        return Stack(
+          children: [
+            buildMap(
+              latlng: latlng,
+              users: mapCntrl.mapUsers,
+              mapController: flutterMapController,
+            ),
+            getLocation(
+              currentLocation: latlng,
+              mapController: flutterMapController,
+            ),
+          ],
+        );
       }),
-    );
-  }
-
-  static PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppColors.safetyBlue,
-      elevation: 0,
-      centerTitle: true,
-      title: Text(
-        'Emergency Map',
-        style: AppTextStyling.title_18M.copyWith(
-          color: AppColors.pureWhite,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
     );
   }
 }

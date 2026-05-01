@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_source_code/communities/presentation/view/communities_screen.dart';
 import 'package:fyp_source_code/start_point/veiw_cntrl.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
@@ -14,7 +15,7 @@ class StartPoint extends StatelessWidget {
   List<Widget> get pages => [
     const HomeScreen(),
     MapScreen(),
-    _buildCommunityPage(),
+    const CommunitiesScreen(),
     const ProfileScreen(),
   ];
 
@@ -32,10 +33,10 @@ class StartPoint extends StatelessWidget {
   static Widget _buildBottomNavBar(EntryViewCntrl controller) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.pureWhite,
+        color: Get.theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: const Color.fromRGBO(33, 33, 33, 0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 12,
             offset: const Offset(0, -2),
           ),
@@ -106,24 +107,6 @@ class StartPoint extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  static Widget _buildCommunityPage() {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.safetyBlue,
-        title: Text(
-          'Community',
-          style: AppTextStyling.title_18M.copyWith(
-            color: AppColors.pureWhite,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-      body: Center(
-        child: Text('Community Page', style: AppTextStyling.title_18M),
       ),
     );
   }

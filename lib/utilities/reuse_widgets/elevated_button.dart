@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/shimmer_loading.dart';
 
 class RoundButton extends StatelessWidget {
   final bool loading;
@@ -34,7 +35,16 @@ class RoundButton extends StatelessWidget {
       ),
       child:
           loading
-              ? const Center(child: CircularProgressIndicator())
+              ? AppShimmer(
+                child: Container(
+                  height: 18,
+                  width: 96,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.35),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              )
               : Text(title, style: textStyle),
     );
   }

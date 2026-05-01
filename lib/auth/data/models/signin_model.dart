@@ -71,6 +71,8 @@ class User {
   String? email;
   String? password;
   String? role;
+  String? fullName;
+  String? location;
   String? verificationStatus; // NEW: Add verification status from backend
 
   User({
@@ -78,16 +80,22 @@ class User {
     this.email,
     this.password,
     this.role,
+    this.fullName,
+    this.location,
     this.id,
     this.verificationStatus, // NEW: Include in constructor
   });
 
   User.fromJson(Map<String, dynamic> json) {
     username = json['username'];
+    fullName = json['name'] ?? json['fullName'] ?? json['full_name'];
     email = json['email'];
     password = json['password'];
     role = json['role'];
     id = json['_id'] ?? json['id'];
+    final rawLocation =
+        json['location'] ?? json['city'] ?? json['locationName'] ?? json['area'];
+    location = _normalizeLocation(rawLocation);
 
     // Parse verificationStatus with multiple field name support
     verificationStatus =
@@ -101,12 +109,41 @@ class User {
     );
   }
 
+  String? _normalizeLocation(dynamic rawLocation) {
+    if (rawLocation == null) {
+      return null;
+    }
+    if (rawLocation is String) {
+      return rawLocation;
+    }
+    if (rawLocation is Map) {
+      final map = Map<String, dynamic>.from(rawLocation);
+      final name = map['name'] ?? map['address'] ?? map['label'];
+      if (name is String && name.trim().isNotEmpty) {
+        return name.trim();
+      }
+      final coords = map['coordinates'];
+      if (coords is List && coords.length >= 2) {
+        final lng = coords[0];
+        final lat = coords[1];
+        return '${lat.toString()}, ${lng.toString()}';
+      }
+    }
+    return rawLocation.toString();
+  }
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['username'] = username;
+    if (fullName != null) {
+      data['name'] = fullName;
+    }
     data['email'] = email;
     data['password'] = password;
     data['role'] = role;
+    if (location != null) {
+      data['location'] = location;
+    }
     if (id != null) {
       data['id'] = id;
     }
@@ -120,22 +157,26 @@ class User {
   User copyWith({
     String? id,
     String? username,
+    String? fullName,
     String? email,
     String? password,
     String? role,
+    String? location,
     String? verificationStatus,
   }) {
     return User(
       id: id ?? this.id,
       username: username ?? this.username,
+      fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       password: password ?? this.password,
       role: role ?? this.role,
+      location: location ?? this.location,
       verificationStatus: verificationStatus ?? this.verificationStatus,
     );
   }
 
   @override
   String toString() =>
-      'User(id: $id, username: $username, email: $email, role: $role, verificationStatus: $verificationStatus)';
+      'User(id: $id, username: $username, fullName: $fullName, email: $email, role: $role, location: $location, verificationStatus: $verificationStatus)';
 }

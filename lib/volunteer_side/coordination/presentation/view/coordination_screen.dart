@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/app_bar.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/shimmer_loading.dart';
+import 'package:fyp_source_code/volunteer_side/coordination/data/model/coordination_contact.dart';
 import 'package:get/get.dart';
 
 import '../controller/coordination_controller.dart';
@@ -11,216 +14,165 @@ class CoordinationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CoordinationController controller = Get.put(CoordinationController());
+    final controller = Get.put(CoordinationController());
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.safetyBlue,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SafeArea(
-              child: Text(
-                'Coordination',
-                style: AppTextStyling.title_18M.copyWith(
-                  color: AppColors.pureWhite,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-            Text(
-              'Connect with volunteers',
-              style: AppTextStyling.body_12S.copyWith(
-                color: AppColors.pureWhite.withOpacity(0.9),
-              ),
-            ),
-          ],
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: const WeHelpAppBar(
+        title: 'Coordination',
+        subtitle: 'Contacts and active support chats',
+        showBack: true,
       ),
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: AppSize.mH),
-
-            // Search Bar for All Volunteers
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSize.m),
+              padding: EdgeInsets.all(AppSize.m),
               child: TextField(
                 controller: controller.searchController,
                 onChanged: controller.updateSearch,
                 decoration: InputDecoration(
-                  hintText: 'Search volunteers...',
-                  hintStyle: AppTextStyling.body_12S.copyWith(
-                    color: Colors.grey[500],
-                  ),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
-                  suffixIcon:
-                      controller.searchQuery.value.isNotEmpty
-                          ? GestureDetector(
-                            onTap: () {
-                              controller.searchController.clear();
-                              controller.updateSearch('');
-                            },
-                            child: Icon(Icons.close, color: Colors.grey[600]),
-                          )
-                          : null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide(
-                      color: AppColors.safetyBlue,
-                      width: 2,
-                    ),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSize.m,
-                    vertical: AppSize.sH,
-                  ),
+                  hintText: 'Search contacts...',
+                  prefixIcon: const Icon(Icons.search_rounded),
                 ),
               ),
             ),
-
-            SizedBox(height: AppSize.mH),
-
-            // Volunteers List
+            Obx(() {
+              if (!controller.isVolunteer) {
+                return const SizedBox.shrink();
+              }
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSize.m),
+                child: SegmentedButton<int>(
+                  style: ButtonStyle(visualDensity: VisualDensity.compact),
+                  selectedIcon: const Icon(Icons.check_rounded, size: 16),
+                  segments: const [
+                    ButtonSegment(
+                      value: 0,
+                      label: Text('Requestees'),
+                      icon: Icon(Icons.support_agent_rounded),
+                    ),
+                    ButtonSegment(
+                      value: 1,
+                      label: Text('Volunteers'),
+                      icon: Icon(Icons.groups_rounded),
+                    ),
+                  ],
+                  selected: {controller.selectedTab.value},
+                  onSelectionChanged:
+                      (value) => controller.changeTab(value.first),
+                ),
+              );
+            }),
+            SizedBox(height: AppSize.sH),
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
+                  return AppShimmer(
+                    child: ListView.separated(
+                      padding: EdgeInsets.all(AppSize.m),
+                      itemCount: 5,
+                      separatorBuilder: (_, __) => SizedBox(height: AppSize.sH),
+                      itemBuilder:
+                          (_, __) =>
+                              const ShimmerListTileSkeleton(subtitleLines: 1),
+                    ),
+                  );
                 }
 
-                final volunteers = controller.volunteersList;
-                if (volunteers.isEmpty) {
+                final contacts = controller.visibleContacts;
+                if (contacts.isEmpty) {
                   return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.person_outline,
-                          size: 48,
-                          color: Colors.grey[400],
-                        ),
-                        SizedBox(height: AppSize.mH),
-                        Text(
-                          controller.searchQuery.value.isNotEmpty
-                              ? 'No volunteers found'
-                              : 'Loading volunteers...',
-                          style: AppTextStyling.body_14M.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      'No coordination contacts yet',
+                      style: AppTextStyling.body_14M.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   );
                 }
 
                 return RefreshIndicator(
-                  onRefresh: () => controller.refresh(),
+                  onRefresh: controller.fetchContacts,
                   child: ListView.separated(
-                    padding: EdgeInsets.symmetric(vertical: AppSize.mH),
-                    itemCount: volunteers.length,
-                    separatorBuilder: (_, __) => SizedBox(height: AppSize.m),
+                    padding: EdgeInsets.all(AppSize.m),
+                    itemCount: contacts.length,
+                    separatorBuilder: (_, __) => SizedBox(height: AppSize.sH),
                     itemBuilder: (context, index) {
-                      final volunteer = volunteers[index];
-                      final firstLetter =
-                          volunteer.username.isNotEmpty
-                              ? volunteer.username[0].toUpperCase()
-                              : '?';
-
-                      return Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSize.m),
-                        child: GestureDetector(
-                          onTap:
-                              () => controller.startNewConversation(volunteer),
-                          child: Card(
-                            elevation: 2,
-                            child: Padding(
-                              padding: EdgeInsets.all(AppSize.mH),
-                              child: Row(
-                                children: [
-                                  // Avatar
-                                  CircleAvatar(
-                                    radius: 28,
-                                    backgroundColor: AppColors.steelBlue,
-                                    child: Text(
-                                      firstLetter,
-                                      style: TextStyle(
-                                        color: AppColors.pureWhite,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: AppSize.m),
-                                  // Info
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          volunteer.username,
-                                          style: AppTextStyling.title_16M
-                                              .copyWith(color: AppColors.black),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        SizedBox(height: AppSize.xsH),
-                                        Text(
-                                          volunteer.email,
-                                          style: AppTextStyling.body_12S
-                                              .copyWith(
-                                                color: Colors.grey[600],
-                                              ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Send icon
-                                  GestureDetector(
-                                    onTap:
-                                        () => controller.startNewConversation(
-                                          volunteer,
-                                        ),
-                                    child: Container(
-                                      padding: EdgeInsets.all(AppSize.s),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.safetyBlue.withOpacity(
-                                          0.1,
-                                        ),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.send,
-                                        color: AppColors.safetyBlue,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+                      return _ContactTile(
+                        contact: contacts[index],
+                        onTap: () => controller.openContact(contacts[index]),
                       );
                     },
                   ),
                 );
               }),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ContactTile extends StatelessWidget {
+  final CoordinationContact contact;
+  final VoidCallback onTap;
+
+  const _ContactTile({required this.contact, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final firstLetter =
+        contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?';
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: EdgeInsets.all(AppSize.m),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Theme.of(context).dividerColor),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor:
+                  contact.isVolunteer
+                      ? AppColors.steelBlue
+                      : AppColors.reliefGreen,
+              child: Text(
+                firstLetter,
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+            SizedBox(width: AppSize.m),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    contact.name,
+                    style: AppTextStyling.title_16M.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (contact.email.isNotEmpty)
+                    Text(
+                      contact.email,
+                      style: AppTextStyling.body_12S.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Icon(Icons.chat_bubble_outline, color: AppColors.steelBlue),
           ],
         ),
       ),

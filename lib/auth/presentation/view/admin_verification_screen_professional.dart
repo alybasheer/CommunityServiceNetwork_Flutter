@@ -7,6 +7,7 @@ import 'package:fyp_source_code/auth/presentation/view/widgets/verification_text
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/app_bar.dart';
 import 'package:get/get.dart';
 
 class AdminVerificationScreenProfessional extends StatelessWidget {
@@ -17,19 +18,11 @@ class AdminVerificationScreenProfessional extends StatelessWidget {
     final controller = Get.put(VolunteerVerificationController());
 
     return Scaffold(
-
-      appBar: AppBar(
-        backgroundColor: AppColors.pureWhite,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.safetyBlue),
-          onPressed: () => Get.back(),
-        ),
-        title: Text(
-          'Volunteer Verification',
-          style: AppTextStyling.title_18M.copyWith(color: AppColors.safetyBlue),
-        ),
-        centerTitle: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: const WeHelpAppBar(
+        title: 'Volunteer Verification',
+        subtitle: 'Complete your details for review',
+        showBack: true,
       ),
       body: SafeArea(
         child: SingleChildScrollView(

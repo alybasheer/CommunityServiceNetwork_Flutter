@@ -9,14 +9,25 @@ class DioHelper {
     if (response.statusCode == 404) {
       throw FetchDataExceptions('Endpoint not found: $url');
     }
+
     final errorMsg =
         response.data is Map && response.data['message'] != null
             ? response.data['message'].toString()
             : (response.statusMessage ?? 'Error: ${response.statusCode}');
+
     print(
       'API ERROR: url=$url status=${response.statusCode} dataType=${response.data.runtimeType} data=${response.data}',
     );
-    throw FetchDataExceptions('Error : $errorMsg');
+
+    if (response.statusCode == 400) {
+      throw BadRequestException(errorMsg);
+    } else if (response.statusCode == 401) {
+      throw UnauthorizedException(errorMsg);
+    }
+
+    throw FetchDataExceptions(
+      errorMsg,
+    ); // removed the prefix so it displays clearly
   }
 
   //get
@@ -28,10 +39,6 @@ class DioHelper {
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return response.data;
-      } else if (response.statusCode == 400) {
-        throw BadRequestException('Bad request');
-      } else if (response.statusCode == 401) {
-        throw UnauthorizedException('Unauthorized Request');
       } else {
         _handleErrorResponse(url, response);
       }
@@ -55,10 +62,6 @@ class DioHelper {
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return response.data;
-      } else if (response.statusCode == 400) {
-        throw BadRequestException('Bad request');
-      } else if (response.statusCode == 401) {
-        throw UnauthorizedException('Unauthorized Request');
       } else {
         _handleErrorResponse(url, response);
       }
@@ -81,25 +84,55 @@ class DioHelper {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return response.data;
-      } else if (response.statusCode == 400) {
-        throw BadRequestException('Bad request');
-      } else if (response.statusCode == 401) {
-        throw UnauthorizedException('Unathorized Request');
       } else {
-        final errorMsg =
-            response.data is Map && response.data['message'] != null
-                ? response.data['message'].toString()
-                : (response.statusMessage ?? response.data.toString());
-        print(
-          'API ERROR: url=$url status=${response.statusCode} dataType=${response.data.runtimeType} data=${response.data}',
-        );
-        throw FetchDataExceptions('Error : $errorMsg');
+        _handleErrorResponse(url, response);
       }
     } on DioException catch (e) {
-
       throw FetchDataExceptions(e.message ?? 'Network Error');
-      
     }
+  }
 
+  Future<dynamic> patch({
+    required String url,
+    Object? reqBody,
+    bool isauthorize = false,
+  }) async {
+    try {
+      Response response = await dio.patch(
+        url,
+        options: getOptions(isauthorize: isauthorize),
+        data: reqBody,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data;
+      } else {
+        _handleErrorResponse(url, response);
+      }
+    } on DioException catch (e) {
+      throw FetchDataExceptions(e.message ?? 'Network Error');
+    }
+  }
+
+  Future<dynamic> delete({
+    required String url,
+    Object? reqBody,
+    bool isauthorize = false,
+  }) async {
+    try {
+      Response response = await dio.delete(
+        url,
+        options: getOptions(isauthorize: isauthorize),
+        data: reqBody,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data;
+      } else {
+        _handleErrorResponse(url, response);
+      }
+    } on DioException catch (e) {
+      throw FetchDataExceptions(e.message ?? 'Network Error');
+    }
   }
 }

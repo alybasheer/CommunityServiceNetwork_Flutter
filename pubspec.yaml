@@ -60,6 +60,7 @@ dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: "^0.14.4"
+  geocoding: ^4.0.0
 
 flutter_launcher_icons:
   android: "launcher_icon"

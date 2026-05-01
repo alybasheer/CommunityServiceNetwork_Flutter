@@ -1,6 +1,9 @@
-// ProfileController using GetX
-// ...existing code...
 import 'package:flutter/material.dart';
+import 'package:fyp_source_code/routing/route_names.dart';
+import 'package:fyp_source_code/services/location_services.dart';
+import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
+import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
+import 'package:fyp_source_code/utilities/validators/validators.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -9,43 +12,260 @@ class ProfileController extends GetxController {
 
   final nameController = TextEditingController();
   final emailController = TextEditingController();
+  final locationController = TextEditingController();
+
   final isSwitching = false.obs;
+  final isSaving = false.obs;
+  final isResolvingLocation = false.obs;
+  final role = ''.obs;
+  final verificationStatus = ''.obs;
+  final profileName = ''.obs;
+  final profileEmail = ''.obs;
+  final profileLocation = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
-    nameController.text = storage.read('profile_name') ?? 'Volunteer User';
-    emailController.text = storage.read('profile_email') ?? 'user@example.com';
-    isSwitching.value = storage.read('dark_mode') ?? false;
+    refreshFromStorage();
+    themeLoad();
   }
 
-  void saveProfile() {
-    storage.write('profile_name', nameController.text.trim());
-    storage.write('profile_email', emailController.text.trim());
-    Get.snackbar('Saved', 'Profile updated', snackPosition: SnackPosition.BOTTOM);
+  void refreshFromStorage() {
+    final savedName = _readFirstString([
+      'profile_name',
+      'name',
+      'username',
+    ], fallback: 'Community Member');
+    final savedEmail = _readFirstString([
+      'profile_email',
+      'email',
+    ], fallback: 'user@example.com');
+    final savedLocation = _readFirstString([
+      'profile_location',
+      'locationName',
+      'city',
+      'location',
+    ], fallback: 'Location not set');
+
+    nameController.text = savedName;
+    emailController.text = savedEmail;
+    locationController.text = savedLocation;
+    role.value = _normalizeRole(_readFirstString(['role']));
+    verificationStatus.value = _readFirstString(['verificationStatus']);
+    isSwitching.value =
+        storage.read('theme') == true || storage.read('dark_mode') == true;
+    _syncPreviewFields();
   }
 
-  void onSwitch() {
-    isSwitching.value = !isSwitching.value;
+  Future<void> saveProfile() async {
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
+    final location = locationController.text.trim();
+
+    if (name.isEmpty) {
+      ToastHelper.showError('Name is required.');
+      return;
+    }
+
+    final emailError = AppValidators.validateEmail(email);
+    if (emailError != null) {
+      ToastHelper.showError(emailError);
+      return;
+    }
+
+    isSaving.value = true;
+    try {
+      storage.write('profile_name', name);
+      storage.write('profile_email', email);
+      storage.write('email', email);
+      if (location.isNotEmpty) {
+        storage.write('profile_location', location);
+      }
+      _syncPreviewFields();
+      ToastHelper.showSuccess('Profile updated.');
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  Future<void> useCurrentLocation() async {
+    isResolvingLocation.value = true;
+    try {
+      final position = await getCurrentLocation();
+      final locationName = await getLocationNameFromCoordinates(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
+      locationController.text = locationName;
+      storage.write('profile_location', locationName);
+      _syncPreviewFields();
+      ToastHelper.showSuccess('Location updated.');
+    } catch (e) {
+      ToastHelper.showErrorMessage(e);
+    } finally {
+      isResolvingLocation.value = false;
+    }
+  }
+
+  void onSwitch([bool? value]) {
+    isSwitching.value = value ?? !isSwitching.value;
     storage.write('theme', isSwitching.value);
+    storage.write('dark_mode', isSwitching.value);
     Get.changeThemeMode(isSwitching.value ? ThemeMode.dark : ThemeMode.light);
   }
-  Future<dynamic>  themeLoad() async{
-    isSwitching.value = await storage.read('theme') ?? false;
-    Get.changeThemeMode( isSwitching.value ? ThemeMode.dark: ThemeMode.light);
+
+  Future<void> themeLoad() async {
+    isSwitching.value =
+        storage.read('theme') == true || storage.read('dark_mode') == true;
+    Get.changeThemeMode(isSwitching.value ? ThemeMode.dark : ThemeMode.light);
   }
 
+  bool get isVolunteer => role.value == 'volunteer';
+
+  bool get isRequestee {
+    return role.value == 'requestee' ||
+        role.value == 'request_help' ||
+        role.value == 'requesthelp';
+  }
+
+  String get displayRole {
+    if (isVolunteer) {
+      return 'Volunteer';
+    }
+    if (isRequestee) {
+      return 'Requestee';
+    }
+    return 'Community member';
+  }
+
+  String get statusLabel {
+    if (isVolunteer) {
+      final status = verificationStatus.value.trim();
+      if (status.isEmpty) {
+        return 'Verification not submitted';
+      }
+      return status[0].toUpperCase() + status.substring(1).toLowerCase();
+    }
+    return 'Active';
+  }
+
+  Color get roleColor {
+    if (isVolunteer) {
+      return AppColors.reliefGreen;
+    }
+    if (isRequestee) {
+      return AppColors.steelBlue;
+    }
+    return AppColors.mediumGray;
+  }
+
+  IconData get roleIcon {
+    if (isVolunteer) {
+      return Icons.volunteer_activism_rounded;
+    }
+    if (isRequestee) {
+      return Icons.support_agent_rounded;
+    }
+    return Icons.person_rounded;
+  }
+
+  String get initials {
+    final name = profileName.value.trim();
+    if (name.isEmpty) {
+      return 'U';
+    }
+    final words = name.split(RegExp(r'\s+'));
+    if (words.length == 1) {
+      return words.first.substring(0, 1).toUpperCase();
+    }
+    return '${words.first.substring(0, 1)}${words.last.substring(0, 1)}'
+        .toUpperCase();
+  }
+
+  void openPrimaryWorkspace() {
+    if (isVolunteer) {
+      Get.offAllNamed(RouteNames.startPoint);
+      return;
+    }
+    Get.offAllNamed(RouteNames.requestHome);
+  }
+
+  void openAlerts() {
+    Get.toNamed(RouteNames.alerts);
+  }
+
+  void openCoordination() {
+    Get.toNamed(RouteNames.coordination);
+  }
+
+  void openCommunities() {
+    if (!isVolunteer) {
+      ToastHelper.showWarning('Communities are available for volunteers.');
+      return;
+    }
+    Get.toNamed(RouteNames.communities);
+  }
 
   void signOut() {
-    // Replace with real auth sign-out if needed
-    storage.erase();
-    Get.offAllNamed('/');
+    final keepTheme = isSwitching.value;
+    storage.remove('token');
+    storage.remove('email');
+    storage.remove('userId');
+    storage.remove('role');
+    storage.remove('verificationStatus');
+    storage.remove('profile_name');
+    storage.remove('profile_email');
+    storage.remove('profile_location');
+    storage.remove('name');
+    storage.remove('username');
+    storage.remove('city');
+    storage.remove('location');
+    storage.remove('locationName');
+    storage.write('hasSeenOnboarding', true);
+    storage.write('theme', keepTheme);
+    storage.write('dark_mode', keepTheme);
+    _resetLocalProfile();
+    Get.offAllNamed(RouteNames.login);
+  }
+
+  String _readFirstString(List<String> keys, {String fallback = ''}) {
+    for (final key in keys) {
+      final value = storage.read(key);
+      if (value == null) {
+        continue;
+      }
+      final text = value.toString().trim();
+      if (text.isNotEmpty && text != 'null') {
+        return text;
+      }
+    }
+    return fallback;
+  }
+
+  String _normalizeRole(String value) {
+    return value.trim().toLowerCase().replaceAll(' ', '_');
+  }
+
+  void _syncPreviewFields() {
+    profileName.value = nameController.text.trim();
+    profileEmail.value = emailController.text.trim();
+    profileLocation.value = locationController.text.trim();
+  }
+
+  void _resetLocalProfile() {
+    nameController.text = 'Community Member';
+    emailController.text = 'user@example.com';
+    locationController.text = 'Location not set';
+    role.value = '';
+    verificationStatus.value = '';
+    _syncPreviewFields();
   }
 
   @override
   void onClose() {
     nameController.dispose();
     emailController.dispose();
+    locationController.dispose();
     super.onClose();
   }
 }

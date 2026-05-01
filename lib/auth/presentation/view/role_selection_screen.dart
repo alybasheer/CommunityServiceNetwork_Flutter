@@ -25,7 +25,7 @@ class RoleSelectionScreen extends StatelessWidget {
               AppSize.xxxlHeight,
               // Request Help Card
               roleCard(
-                'requestHelp',
+                'request_help',
                 Icons.favorite,
                 Colors.orange[700]!,
                 'Request Help',

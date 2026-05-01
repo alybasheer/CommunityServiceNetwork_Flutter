@@ -5,6 +5,7 @@ import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/shimmer_loading.dart';
 import 'package:get/get.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -15,7 +16,6 @@ class LoginScreen extends StatelessWidget {
     final authController = Get.put(AuthController());
 
     return Scaffold(
-
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -229,12 +229,14 @@ class LoginScreen extends StatelessWidget {
                         ),
                         child:
                             authController.isLoading.value
-                                ? SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.5,
+                                ? AppShimmer(
+                                  child: Container(
+                                    height: 18,
+                                    width: 88,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.35),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 )
                                 : Text(

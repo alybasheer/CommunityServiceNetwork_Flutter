@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/splash_onboardings/data/models/onboarding_model.dart';
 import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:get/get.dart';
@@ -68,12 +69,12 @@ class OnboardingController extends GetxController {
 
   void skipOnboarding() {
     _markOnboardingAsComplete();
-    Get.offAllNamed('/login');
+    Get.offAllNamed(RouteNames.login);
   }
 
   void finishOnboarding() {
     _markOnboardingAsComplete();
-    Get.offAllNamed('/login');
+    Get.offAllNamed(RouteNames.login);
   }
 
   void _markOnboardingAsComplete() {
