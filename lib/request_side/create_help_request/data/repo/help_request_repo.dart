@@ -87,6 +87,15 @@ class HelpRequestRepo {
     return _parseRequest(response);
   }
 
+  Future<HelpRequest> resolveRequest(String id) async {
+    final response = await _dioHelper.patch(
+      url: ApiNames.resolveHelpRequest(id),
+      isauthorize: true,
+    );
+
+    return _parseRequest(response);
+  }
+
   Future<dynamic> rateRequest(
     String id, {
     required int score,

@@ -58,13 +58,36 @@ class HomeController extends GetxController {
     }
 
     try {
-      await _repo.acceptRequest(id);
-      Get.toNamed(RouteNames.map);
+      final accepted = await _repo.acceptRequest(id);
+      final activeRequest = _mergeAcceptedRequest(request, accepted);
+      Get.toNamed(
+        RouteNames.map,
+        arguments: {'request': activeRequest.toJson()},
+      );
       await fetchRequests();
       await fetchVolunteerStats();
     } catch (e) {
       ToastHelper.showErrorMessage(e);
     }
+  }
+
+  HelpRequest _mergeAcceptedRequest(
+    HelpRequest original,
+    HelpRequest accepted,
+  ) {
+    accepted.sId ??= original.sId;
+    accepted.userId ??= original.userId;
+    accepted.userName ??= original.userName;
+    accepted.title ??= original.title;
+    accepted.category ??= original.category;
+    accepted.subCategory ??= original.subCategory;
+    accepted.description ??= original.description;
+    accepted.image ??= original.image;
+    accepted.locationName ??= original.locationName;
+    accepted.location ??= original.location;
+    accepted.status ??= original.status;
+    accepted.isSos = accepted.isSos || original.isSos;
+    return accepted;
   }
 
   Future<void> fetchVolunteerStats() async {

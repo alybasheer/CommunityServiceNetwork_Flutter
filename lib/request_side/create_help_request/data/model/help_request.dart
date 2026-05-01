@@ -98,7 +98,10 @@ class HelpRequest {
 
     sId = _readId(json);
     userId = _readRefId(userRef);
-    userName = _readRefName(userRef);
+    userName =
+        _readRefName(userRef) ??
+        json['userName']?.toString() ??
+        json['requesteeName']?.toString();
     title = json['title']?.toString();
     category = json['category']?.toString();
     subCategory = json['subCategory']?.toString();
@@ -119,7 +122,8 @@ class HelpRequest {
     }
     status = json['status']?.toString();
     acceptedBy = _readRefId(acceptedRef);
-    acceptedByName = _readRefName(acceptedRef);
+    acceptedByName =
+        _readRefName(acceptedRef) ?? json['acceptedByName']?.toString();
     isSos =
         _readBool(json['isSos']) ||
         _readBool(json['sos']) ||
@@ -160,6 +164,7 @@ class HelpRequest {
     final data = <String, dynamic>{};
     data['_id'] = sId;
     data['userId'] = userId;
+    data['userName'] = userName;
     data['title'] = title;
     data['category'] = category;
     data['subCategory'] = subCategory;
@@ -171,6 +176,7 @@ class HelpRequest {
     }
     data['status'] = status;
     data['acceptedBy'] = acceptedBy;
+    data['acceptedByName'] = acceptedByName;
     data['isSos'] = isSos;
     data['rating'] = rating;
     data['outcome'] = outcome;
