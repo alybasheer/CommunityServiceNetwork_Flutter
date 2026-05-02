@@ -10,6 +10,7 @@ class RequestDetailsDialog extends StatelessWidget {
   final String title;
   final String description;
   final String location;
+  final bool isAccepting;
   final VoidCallback? onAccept;
 
   const RequestDetailsDialog({
@@ -18,6 +19,7 @@ class RequestDetailsDialog extends StatelessWidget {
     required this.title,
     required this.description,
     required this.location,
+    this.isAccepting = false,
     this.onAccept,
   });
 
@@ -118,17 +120,20 @@ class RequestDetailsDialog extends StatelessWidget {
                     SizedBox(width: AppSize.s),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          Get.back();
-                          onAccept?.call();
-                        },
+                        onPressed:
+                            isAccepting
+                                ? null
+                                : () {
+                                  Get.back();
+                                  onAccept?.call();
+                                },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.reliefGreen,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const Text('Accept'),
+                        child: Text(isAccepting ? 'Accepting' : 'Accept'),
                       ),
                     ),
                   ],

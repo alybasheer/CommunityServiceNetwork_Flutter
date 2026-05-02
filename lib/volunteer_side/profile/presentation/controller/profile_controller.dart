@@ -3,6 +3,7 @@ import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/services/location_services.dart';
 import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
+import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:fyp_source_code/utilities/validators/validators.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -208,20 +209,7 @@ class ProfileController extends GetxController {
 
   void signOut() {
     final keepTheme = isSwitching.value;
-    storage.remove('token');
-    storage.remove('email');
-    storage.remove('userId');
-    storage.remove('role');
-    storage.remove('verificationStatus');
-    storage.remove('profile_name');
-    storage.remove('profile_email');
-    storage.remove('profile_location');
-    storage.remove('name');
-    storage.remove('username');
-    storage.remove('city');
-    storage.remove('location');
-    storage.remove('locationName');
-    storage.write('hasSeenOnboarding', true);
+    StorageHelper().clearSessionData();
     storage.write('theme', keepTheme);
     storage.write('dark_mode', keepTheme);
     _resetLocalProfile();

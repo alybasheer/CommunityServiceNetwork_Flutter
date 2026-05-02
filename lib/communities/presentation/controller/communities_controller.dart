@@ -167,6 +167,18 @@ class CommunitiesController extends GetxController {
     return isAdmin || community.creatorId == currentUserId;
   }
 
+  bool canJoin(CommunityModel community) {
+    return (isVolunteer || isAdmin) &&
+        !community.memberIds.contains(currentUserId) &&
+        community.status == 'open';
+  }
+
+  bool canChat(CommunityModel community) {
+    return isAdmin ||
+        community.creatorId == currentUserId ||
+        community.memberIds.contains(currentUserId);
+  }
+
   void _clearCreateFields() {
     titleController.clear();
     detailsController.clear();

@@ -40,9 +40,14 @@ class SplashController extends GetxController {
         return;
       }
 
-      if (_isRequesteeRole(role)) {
-        userStatus.value = UserStatus.authenticated;
-        Get.offAllNamed(RouteNames.requestHome);
+      if (role == 'volunteer') {
+        userStatus.value = UserStatus.verified;
+        Get.offAllNamed(RouteNames.startPoint);
+        return;
+      }
+
+      if (role == 'user' || _isRequesteeRole(role)) {
+        await _handleUserRole();
         return;
       }
 
@@ -87,30 +92,72 @@ class SplashController extends GetxController {
       );
 
       var verificationStatus = '';
-      if (response is Map<String, dynamic>) {
-        verificationStatus =
-            response['verificationStatus']?.toString() ??
-            response['verification_status']?.toString() ??
-            response['status']?.toString() ??
-            response['verifyStatus']?.toString() ??
-            '';
-      }
+      final snapshot = _VolunteerStatusSnapshot.fromResponse(response);
+      verificationStatus = snapshot.status;
 
-      if (verificationStatus.isNotEmpty) {
+      if (snapshot.hasApplication && verificationStatus.isNotEmpty) {
         StorageHelper().saveData('verificationStatus', verificationStatus);
       }
 
-      _navigateBasedOnStatus(verificationStatus);
+      _navigateBasedOnStatus(
+        verificationStatus,
+        hasApplication: snapshot.hasApplication,
+      );
     } catch (e) {
       final cachedStatus =
           StorageHelper().readData('verificationStatus')?.toString() ?? '';
-      _navigateBasedOnStatus(cachedStatus);
+      _navigateBasedOnStatus(cachedStatus, hasApplication: true);
     }
   }
 
-  void _navigateBasedOnStatus(String verificationStatus) {
+  Future<void> _handleUserRole() async {
+    final snapshot = await _fetchVolunteerStatus();
+    if (snapshot.hasApplication && snapshot.isPending) {
+      StorageHelper().saveData('verificationStatus', 'pending');
+      userStatus.value = UserStatus.pending;
+      Get.offAllNamed(RouteNames.waitingScreen);
+      return;
+    }
+
+    if (snapshot.hasApplication && snapshot.isApproved) {
+      StorageHelper().clearSessionData();
+      userStatus.value = UserStatus.notAuthenticated;
+      Get.offAllNamed(RouteNames.login);
+      return;
+    }
+
+    if (snapshot.hasApplication && snapshot.isRejected) {
+      StorageHelper().saveData('verificationStatus', snapshot.status);
+    } else {
+      StorageHelper().removeData('verificationStatus');
+    }
+
+    StorageHelper().saveData('role', 'user');
+    userStatus.value = UserStatus.authenticated;
+    Get.offAllNamed(RouteNames.requestHome);
+  }
+
+  Future<_VolunteerStatusSnapshot> _fetchVolunteerStatus() async {
+    try {
+      final response = await DioHelper().get(
+        url: ApiNames.volunteerStatus,
+        isauthorize: true,
+      );
+      return _VolunteerStatusSnapshot.fromResponse(response);
+    } catch (_) {
+      return const _VolunteerStatusSnapshot(status: '', hasApplication: false);
+    }
+  }
+
+  void _navigateBasedOnStatus(
+    String verificationStatus, {
+    bool hasApplication = true,
+  }) {
     final status = verificationStatus.toLowerCase();
-    if (status.isEmpty) {
+    if (!hasApplication) {
+      userStatus.value = UserStatus.authenticated;
+      Get.offAllNamed(RouteNames.requestHome);
+    } else if (status.isEmpty) {
       userStatus.value = UserStatus.authenticated;
       Get.offAllNamed(RouteNames.roleSelection);
     } else if (status == 'pending') {
@@ -126,5 +173,51 @@ class SplashController extends GetxController {
       userStatus.value = UserStatus.authenticated;
       Get.offAllNamed(RouteNames.startPoint);
     }
+  }
+}
+
+class _VolunteerStatusSnapshot {
+  final String status;
+  final bool hasApplication;
+
+  const _VolunteerStatusSnapshot({
+    required this.status,
+    required this.hasApplication,
+  });
+
+  bool get isPending => status == 'pending';
+  bool get isApproved => status == 'approved' || status == 'verified';
+  bool get isRejected => status == 'rejected' || status == 'disapproved';
+
+  factory _VolunteerStatusSnapshot.fromResponse(dynamic response) {
+    Map<String, dynamic> root = {};
+    if (response is Map<String, dynamic>) {
+      root = response;
+    } else if (response is Map) {
+      root = Map<String, dynamic>.from(response);
+    }
+
+    final data =
+        root['data'] is Map
+            ? Map<String, dynamic>.from(root['data'] as Map)
+            : root;
+    final status =
+        (data['status'] ??
+                data['verificationStatus'] ??
+                data['verification_status'] ??
+                '')
+            .toString()
+            .toLowerCase()
+            .trim();
+    final hasApplication =
+        data['_id'] != null ||
+        data['id'] != null ||
+        data['userId'] != null ||
+        data['cnic'] != null;
+
+    return _VolunteerStatusSnapshot(
+      status: status,
+      hasApplication: hasApplication,
+    );
   }
 }

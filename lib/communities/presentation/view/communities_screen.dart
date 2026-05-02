@@ -24,41 +24,26 @@ class CommunitiesScreen extends StatelessWidget {
         subtitle: 'Volunteer groups and local tasks',
         showBack: true,
       ),
-      body:
-          !isVolunteer
-              ? Center(
-                child: Padding(
-                  padding: EdgeInsets.all(AppSize.l),
-                  child: Text(
-                    'You are not eligible to use communities because you are not a volunteer.',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyling.body_14M.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              )
-              : Column(
+      body: Column(
+        children: [
+          SizedBox(
+            height: 48,
+            child: Obx(
+              () => ListView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: AppSize.m),
                 children: [
-                  SizedBox(
-                    height: 48,
-                    child: Obx(
-                      () => ListView(
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(horizontal: AppSize.m),
-                        children: [
-                          _filterChip(controller, null, 'All'),
-                          ...controller.categories.map(
-                            (category) =>
-                                _filterChip(controller, category, category),
-                          ),
-                        ],
-                      ),
-                    ),
+                  _filterChip(controller, null, 'All'),
+                  ...controller.categories.map(
+                    (category) => _filterChip(controller, category, category),
                   ),
-                  Expanded(child: Obx(() => _buildList(controller))),
                 ],
               ),
+            ),
+          ),
+          Expanded(child: Obx(() => _buildList(controller))),
+        ],
+      ),
       floatingActionButton:
           isVolunteer
               ? FloatingActionButton(
@@ -264,16 +249,18 @@ class _CommunityCard extends StatelessWidget {
           Wrap(
             spacing: AppSize.s,
             children: [
-              OutlinedButton.icon(
-                onPressed: () => controller.joinCommunity(community),
-                icon: const Icon(Icons.group_add),
-                label: const Text('Join'),
-              ),
-              OutlinedButton.icon(
-                onPressed: () => _showMessages(controller, community),
-                icon: const Icon(Icons.chat),
-                label: const Text('Chat'),
-              ),
+              if (controller.canJoin(community))
+                OutlinedButton.icon(
+                  onPressed: () => controller.joinCommunity(community),
+                  icon: const Icon(Icons.group_add),
+                  label: const Text('Join'),
+                ),
+              if (controller.canChat(community))
+                OutlinedButton.icon(
+                  onPressed: () => _showMessages(controller, community),
+                  icon: const Icon(Icons.chat),
+                  label: const Text('Chat'),
+                ),
               if (controller.canManage(community))
                 OutlinedButton.icon(
                   onPressed: () => controller.startCommunity(community),

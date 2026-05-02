@@ -107,16 +107,16 @@ class WaitingScreenController extends GetxController {
   void _handleApproved() {
     print('✅ Verification approved!');
     ToastHelper.showSuccess(
-      'Your application has been approved! Welcome to our community.',
+      'Your application has been approved. Please log in again to refresh your volunteer access.',
     );
 
     // Stop polling
     _stopPolling();
 
-    // Navigate to home after delay
+    // A new login refreshes the JWT role from user to volunteer.
     Future.delayed(Duration(milliseconds: 500), () {
-      StorageHelper().saveData('verificationStatus', 'verified');
-      Get.offAllNamed(RouteNames.startPoint);
+      StorageHelper().clearSessionData();
+      Get.offAllNamed(RouteNames.login);
     });
   }
 
@@ -130,10 +130,11 @@ class WaitingScreenController extends GetxController {
     // Stop polling
     _stopPolling();
 
-    // Navigate back to role selection after delay
+    // Keep the account as a normal requester account.
     Future.delayed(Duration(milliseconds: 500), () {
-      StorageHelper().saveData('verificationStatus', '');
-      Get.offAllNamed(RouteNames.roleSelection);
+      StorageHelper().saveData('role', 'user');
+      StorageHelper().saveData('verificationStatus', 'rejected');
+      Get.offAllNamed(RouteNames.requestHome);
     });
   }
 

@@ -50,6 +50,7 @@ class HomeScreen extends StatelessWidget {
               requestsListSection(
                 controller.requests,
                 onAccept: controller.acceptRequest,
+                acceptingIds: controller.acceptingRequestIds,
               ),
               if (controller.requests.isEmpty && !controller.isLoading.value)
                 const SliverToBoxAdapter(child: ReqEmptyState()),

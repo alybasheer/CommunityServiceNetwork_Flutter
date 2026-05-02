@@ -21,7 +21,7 @@ class AdminPanelScreen extends StatelessWidget {
         showBack: true,
       ),
       body: Obx(() {
-        if (ctrl.res.isEmpty) {
+        if (ctrl.isLoading.value) {
           return AppShimmer(
             child: ListView.separated(
               padding: const EdgeInsets.all(12),
@@ -34,6 +34,10 @@ class AdminPanelScreen extends StatelessWidget {
                   ),
             ),
           );
+        }
+
+        if (ctrl.res.isEmpty) {
+          return const Center(child: Text('No pending volunteer applications'));
         }
 
         return ListView.builder(

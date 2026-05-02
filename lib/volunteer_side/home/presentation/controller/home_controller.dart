@@ -17,6 +17,7 @@ class HomeController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxList<HelpRequest> requests = RxList();
+  final RxSet<String> acceptingRequestIds = <String>{}.obs;
   final RxInt completedCount = 0.obs;
   final RxDouble volunteerRating = 0.0.obs;
   final RxString fullName = ''.obs;
@@ -56,7 +57,11 @@ class HomeController extends GetxController {
       ToastHelper.showError('Request is not available right now.');
       return;
     }
+    if (acceptingRequestIds.contains(id)) {
+      return;
+    }
 
+    acceptingRequestIds.add(id);
     try {
       final accepted = await _repo.acceptRequest(id);
       final activeRequest = _mergeAcceptedRequest(request, accepted);
@@ -68,6 +73,8 @@ class HomeController extends GetxController {
       await fetchVolunteerStats();
     } catch (e) {
       ToastHelper.showErrorMessage(e);
+    } finally {
+      acceptingRequestIds.remove(id);
     }
   }
 

@@ -25,6 +25,7 @@ class MapCntrl extends GetxController {
   final RxList<MapUserModel> mapUsers = <MapUserModel>[].obs;
   final RxBool isCompleting = false.obs;
   final RxBool isCancelling = false.obs;
+  final RxString selectedRoleFilter = 'all'.obs;
   StreamSubscription<Position>? positionStream;
 
   @override
@@ -158,6 +159,9 @@ class MapCntrl extends GetxController {
 
       if (permission == LocationPermission.deniedForever) {
         print(' Location permission denied forever! Opening app settings...');
+        ToastHelper.showWarning(
+          'Location permission is required to refresh the map.',
+        );
         await Geolocator.openLocationSettings();
         return;
       }
@@ -177,6 +181,7 @@ class MapCntrl extends GetxController {
       }
     } catch (e) {
       print('Error requesting location permission: $e');
+      ToastHelper.showErrorMessage(e);
     }
   }
 
@@ -233,11 +238,18 @@ class MapCntrl extends GetxController {
       final users = await mapRepo.getMapUsers(
         lat: latLng.latitude,
         lng: latLng.longitude,
+        role:
+            selectedRoleFilter.value == 'all' ? null : selectedRoleFilter.value,
       );
       mapUsers.assignAll(users);
     } catch (e) {
       print('Error fetching map users: $e');
     }
+  }
+
+  Future<void> setRoleFilter(String role) async {
+    selectedRoleFilter.value = role;
+    await fetchMapUsers();
   }
 
   void _restoreActiveRequest() {

@@ -55,6 +55,14 @@ class ChatProvider extends GetxController {
     _socketService.typingStream.listen(_handleTypingIndicator);
     _socketService.connectionStream.listen((connected) {
       isSocketConnected.value = connected;
+      if (connected) {
+        fetchConversations();
+        fetchUnreadCount();
+        final activeChat = currentChatUserId.value;
+        if (activeChat != null) {
+          _refreshActiveConversation(activeChat);
+        }
+      }
     });
   }
 
@@ -309,6 +317,18 @@ class ChatProvider extends GetxController {
       }
     } catch (e) {
       print('❌ Error marking as read: $e');
+    }
+  }
+
+  Future<void> _refreshActiveConversation(String userId) async {
+    try {
+      final messages = await _chatService.fetchConversationHistory(userId);
+      messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      currentMessages.assignAll(messages);
+      _saveMessagesToCache(userId, messages);
+      await markAsRead(userId);
+    } catch (_) {
+      // Keep cached messages visible until REST fallback succeeds.
     }
   }
 

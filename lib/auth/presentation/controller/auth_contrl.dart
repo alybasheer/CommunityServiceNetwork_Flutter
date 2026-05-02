@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:fyp_source_code/auth/data/models/signin_model.dart';
 import 'package:fyp_source_code/auth/data/repo/login-_repo.dart';
 import 'package:fyp_source_code/auth/data/repo/signup_repo.dart';
+import 'package:fyp_source_code/network/api_service.dart';
 import 'package:fyp_source_code/routing/route_names.dart';
+import 'package:fyp_source_code/services/api_names.dart';
 import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
 import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:fyp_source_code/utilities/validators/validators.dart';
@@ -176,30 +178,9 @@ class AuthController extends GetxController {
       // Show success message
       ToastHelper.showSuccess('Login successful!');
 
-      // Navigate based on role and verification status
+      // Navigate based on the backend account role, not the chosen app mode.
       Future.delayed(Duration(milliseconds: 500), () async {
-        final userRole = resp.user!.role?.toLowerCase() ?? '';
-        print('🔍 Navigating user with role: $userRole');
-
-        // Admin users go directly to admin panel
-        if (userRole == 'admin') {
-          print('👨‍💼 Admin user detected - Navigating to admin panel');
-          Get.offAllNamed(RouteNames.adminPanel);
-        } else if (userRole == 'requestee' ||
-            userRole == 'request_help' ||
-            userRole == 'requesthelp') {
-          Get.offAllNamed(RouteNames.requestHome);
-        } else {
-          if (userRole == 'volunteer') {
-            print('✅ Already verified - Navigating directly to startPoint');
-            await Get.offAllNamed(RouteNames.startPoint);
-          } else {
-            print(
-              '📡 Status unknown/pending - Navigating to splash for fresh check',
-            );
-            Get.offAllNamed(RouteNames.splash);
-          }
-        }
+        await _navigateAfterLogin(resp.user!);
       });
     } catch (e) {
       print('❌ Login error: $e');
@@ -311,26 +292,67 @@ class AuthController extends GetxController {
   // ============ LOGOUT ============
   Future<void> logout() async {
     try {
-      StorageHelper().removeData('token');
-      StorageHelper().removeData('email');
-      StorageHelper().removeData('userId');
-      StorageHelper().removeData('role');
-      StorageHelper().removeData('verificationStatus');
-      StorageHelper().removeData('profile_name');
-      StorageHelper().removeData('profile_email');
-      StorageHelper().removeData('profile_location');
-      StorageHelper().removeData('name');
-      StorageHelper().removeData('username');
-      StorageHelper().removeData('city');
-      StorageHelper().removeData('location');
-      StorageHelper().removeData('locationName');
-      StorageHelper().saveData('hasSeenOnboarding', true);
+      StorageHelper().clearSessionData();
       userRole.value = '';
       clearLoginForm();
       clearRegisterForm();
       Get.offAllNamed(RouteNames.login);
     } catch (e) {
       print('Logout error: $e');
+    }
+  }
+
+  Future<void> _navigateAfterLogin(User signedInUser) async {
+    final role = signedInUser.role?.toLowerCase().trim() ?? 'user';
+    print('Navigating user with backend role: $role');
+
+    if (role == 'admin') {
+      Get.offAllNamed(RouteNames.adminPanel);
+      return;
+    }
+
+    if (role == 'volunteer') {
+      StorageHelper().saveData('role', 'volunteer');
+      StorageHelper().saveData('verificationStatus', 'approved');
+      await Get.offAllNamed(RouteNames.startPoint);
+      return;
+    }
+
+    final status = await _fetchVolunteerStatusSnapshot();
+    if (status.hasApplication && status.isPending) {
+      StorageHelper().saveData('verificationStatus', 'pending');
+      Get.offAllNamed(RouteNames.waitingScreen);
+      return;
+    }
+
+    if (status.hasApplication && status.isApproved) {
+      StorageHelper().saveData('verificationStatus', status.status);
+      ToastHelper.showSuccess(
+        'Your volunteer approval is ready. Please log in again.',
+      );
+      await logout();
+      return;
+    }
+
+    if (status.hasApplication && status.isRejected) {
+      StorageHelper().saveData('verificationStatus', status.status);
+    } else {
+      StorageHelper().removeData('verificationStatus');
+    }
+
+    StorageHelper().saveData('role', 'user');
+    Get.offAllNamed(RouteNames.requestHome);
+  }
+
+  Future<_VolunteerStatusSnapshot> _fetchVolunteerStatusSnapshot() async {
+    try {
+      final response = await DioHelper().get(
+        url: ApiNames.volunteerStatus,
+        isauthorize: true,
+      );
+      return _VolunteerStatusSnapshot.fromResponse(response);
+    } catch (_) {
+      return const _VolunteerStatusSnapshot(status: '', hasApplication: false);
     }
   }
 
@@ -341,5 +363,51 @@ class AuthController extends GetxController {
     confirmPassController.dispose();
     usernameController.dispose();
     super.onClose();
+  }
+}
+
+class _VolunteerStatusSnapshot {
+  final String status;
+  final bool hasApplication;
+
+  const _VolunteerStatusSnapshot({
+    required this.status,
+    required this.hasApplication,
+  });
+
+  bool get isPending => status == 'pending';
+  bool get isApproved => status == 'approved' || status == 'verified';
+  bool get isRejected => status == 'rejected' || status == 'disapproved';
+
+  factory _VolunteerStatusSnapshot.fromResponse(dynamic response) {
+    Map<String, dynamic> root = {};
+    if (response is Map<String, dynamic>) {
+      root = response;
+    } else if (response is Map) {
+      root = Map<String, dynamic>.from(response);
+    }
+
+    final data =
+        root['data'] is Map
+            ? Map<String, dynamic>.from(root['data'] as Map)
+            : root;
+    final status =
+        (data['status'] ??
+                data['verificationStatus'] ??
+                data['verification_status'] ??
+                '')
+            .toString()
+            .toLowerCase()
+            .trim();
+    final hasApplication =
+        data['_id'] != null ||
+        data['id'] != null ||
+        data['userId'] != null ||
+        data['cnic'] != null;
+
+    return _VolunteerStatusSnapshot(
+      status: status,
+      hasApplication: hasApplication,
+    );
   }
 }

@@ -8,7 +8,7 @@ class RoleSelectionController extends GetxController {
 
   void selectRole(String role) {
     selectedRole.value = role;
-    StorageHelper().saveData('role', role);
+    StorageHelper().saveData('selectedWorkspace', role);
   }
 
   void navigateBasedOnRole() {

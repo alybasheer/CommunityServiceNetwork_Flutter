@@ -63,6 +63,10 @@ class _MapScreenState extends State<MapScreen> {
               users: mapCntrl.mapUsers,
               mapController: flutterMapController,
             ),
+            _MapFilterBar(
+              selected: mapCntrl.selectedRoleFilter.value,
+              onSelected: mapCntrl.setRoleFilter,
+            ),
             getLocation(
               currentLocation: latlng,
               mapController: flutterMapController,
@@ -118,6 +122,62 @@ class _MapScreenState extends State<MapScreen> {
       return 'none';
     }
     return '${point.latitude.toStringAsFixed(4)},${point.longitude.toStringAsFixed(4)}';
+  }
+}
+
+class _MapFilterBar extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onSelected;
+
+  const _MapFilterBar({required this.selected, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: AppSize.sH,
+      left: AppSize.m,
+      right: AppSize.m,
+      child: SafeArea(
+        bottom: false,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: AppSize.s, vertical: 6),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Theme.of(context).dividerColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: SegmentedButton<String>(
+            selected: {selected},
+            style: ButtonStyle(visualDensity: VisualDensity.compact),
+            segments: const [
+              ButtonSegment(
+                value: 'all',
+                icon: Icon(Icons.layers_rounded),
+                label: Text('All'),
+              ),
+              ButtonSegment(
+                value: 'volunteer',
+                icon: Icon(Icons.volunteer_activism_rounded),
+                label: Text('Volunteers'),
+              ),
+              ButtonSegment(
+                value: 'requestee',
+                icon: Icon(Icons.person_pin_circle_rounded),
+                label: Text('Users'),
+              ),
+            ],
+            onSelectionChanged: (value) => onSelected(value.first),
+          ),
+        ),
+      ),
+    );
   }
 }
 

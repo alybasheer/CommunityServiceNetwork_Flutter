@@ -6,6 +6,7 @@ import 'package:fyp_source_code/request_side/create_help_request/data/model/help
 Widget requestsListSection(
   List<HelpRequest> requests, {
   required void Function(HelpRequest) onAccept,
+  Set<String> acceptingIds = const {},
 }) {
   if (requests.isEmpty) {
     return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -27,6 +28,7 @@ Widget requestsListSection(
           title: request.displayTitle,
           description: request.description ?? 'No description provided.',
           location: request.displayLocation,
+          isAccepting: acceptingIds.contains(request.sId),
           onAccept: () => onAccept(request),
         ),
       );

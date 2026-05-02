@@ -10,6 +10,7 @@ class CommunityModel {
   final String status;
   final String creatorId;
   final String creatorName;
+  final List<String> memberIds;
 
   CommunityModel({
     required this.id,
@@ -23,6 +24,7 @@ class CommunityModel {
     required this.status,
     required this.creatorId,
     required this.creatorName,
+    this.memberIds = const [],
   });
 
   factory CommunityModel.fromJson(Map<String, dynamic> json) {
@@ -54,6 +56,17 @@ class CommunityModel {
           creator?['username']?.toString() ??
           creator?['name']?.toString() ??
           'Volunteer',
+      memberIds:
+          members
+              ?.map((member) {
+                if (member is Map) {
+                  return member['_id']?.toString() ?? member['id']?.toString();
+                }
+                return member?.toString();
+              })
+              .whereType<String>()
+              .toList() ??
+          const [],
     );
   }
 }

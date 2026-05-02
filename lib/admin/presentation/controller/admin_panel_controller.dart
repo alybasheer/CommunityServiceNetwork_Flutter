@@ -7,6 +7,7 @@ class AdminPanelController extends GetxController {
   late final VolunteerVerificationController verificationCtrl;
   final dioHelper = DioHelper();
   var res = <dynamic>[].obs;
+  final isLoading = false.obs;
 
   @override
   void onInit() {
@@ -17,6 +18,7 @@ class AdminPanelController extends GetxController {
   }
 
   Future<dynamic> fetchVolunteerApplications() async {
+    isLoading.value = true;
     try {
       final response = await dioHelper.get(
         url: ApiNames.voulnteerApplications,
@@ -27,6 +29,8 @@ class AdminPanelController extends GetxController {
     } catch (e) {
       print('Error fetching volunteer applications: $e');
       rethrow;
+    } finally {
+      isLoading.value = false;
     }
   }
 

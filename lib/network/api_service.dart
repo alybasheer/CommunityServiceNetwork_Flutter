@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:fyp_source_code/network/exceptions.dart';
 import 'package:fyp_source_code/network/get_dio.dart';
+import 'package:fyp_source_code/routing/route_names.dart';
+import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
+import 'package:get/get.dart' hide Response;
 
 class DioHelper {
   Dio dio = getDio();
@@ -22,12 +25,21 @@ class DioHelper {
     if (response.statusCode == 400) {
       throw BadRequestException(errorMsg);
     } else if (response.statusCode == 401) {
+      _handleUnauthorizedSession();
       throw UnauthorizedException(errorMsg);
     }
 
     throw FetchDataExceptions(
       errorMsg,
     ); // removed the prefix so it displays clearly
+  }
+
+  void _handleUnauthorizedSession() {
+    StorageHelper().clearSessionData();
+    if (Get.currentRoute == RouteNames.login) {
+      return;
+    }
+    Future.microtask(() => Get.offAllNamed(RouteNames.login));
   }
 
   //get
