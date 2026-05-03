@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 
@@ -13,12 +12,14 @@ class RequestLocationChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: AppSize.m, vertical: AppSize.sH),
       decoration: BoxDecoration(
-        color: AppColors.steelBlue.withValues(alpha: 0.08),
+        color: scheme.primary.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.steelBlue.withValues(alpha: 0.2)),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -26,13 +27,13 @@ class RequestLocationChip extends StatelessWidget {
           Icon(
             Icons.location_on_outlined,
             size: 16,
-            color: AppColors.steelBlue,
+            color: scheme.primary,
           ),
           SizedBox(width: AppSize.xs),
           Text(
             label,
             style: AppTextStyling.body_12S.copyWith(
-              color: AppColors.steelBlue,
+              color: scheme.primary,
               fontWeight: FontWeight.w600,
             ),
           ),

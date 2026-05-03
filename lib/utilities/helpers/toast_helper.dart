@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 
 /// Professional generic toast messages for common scenarios
 class ToastMessages {
@@ -38,61 +39,28 @@ class ToastMessages {
   static const String updated = 'Updated successfully.';
 }
 
-/// Toast utility for showing snackbars and toast notifications
+enum _ToastType { success, error, warning, info }
+
+/// Toast utility for showing app-styled snackbars and notifications.
 class ToastHelper {
-  /// Show success toast message
+  static const double _maxSnackWidth = 420;
+
   static void showSuccess(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 2,
-      backgroundColor: Colors.green,
-      textColor: Colors.white,
-      fontSize: 14.0,
-    );
+    _show(message, _ToastType.success);
   }
 
-  /// Show error toast message
   static void showError(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 2,
-      backgroundColor: Colors.red,
-      textColor: Colors.white,
-      fontSize: 14.0,
-    );
+    _show(message, _ToastType.error);
   }
 
-  /// Show warning toast message
   static void showWarning(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 2,
-      backgroundColor: Colors.orange,
-      textColor: Colors.white,
-      fontSize: 14.0,
-    );
+    _show(message, _ToastType.warning);
   }
 
-  /// Show info toast message
   static void showInfo(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 2,
-      backgroundColor: Colors.blue,
-      textColor: Colors.white,
-      fontSize: 14.0,
-    );
+    _show(message, _ToastType.info);
   }
 
-  /// Show custom toast with custom colors
   static void showCustom(
     String message, {
     Color backgroundColor = Colors.black,
@@ -100,20 +68,20 @@ class ToastHelper {
     Toast toastLength = Toast.LENGTH_SHORT,
     int timeInSecForIosWeb = 2,
   }) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: toastLength,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: timeInSecForIosWeb,
+    _show(
+      message,
+      _ToastType.info,
       backgroundColor: backgroundColor,
       textColor: textColor,
-      fontSize: 14.0,
+      duration: Duration(seconds: timeInSecForIosWeb),
     );
   }
 
-  /// Cancel all toasts
   static void cancelAll() {
     Fluttertoast.cancel();
+    if (Get.isSnackbarOpen) {
+      Get.closeCurrentSnackbar();
+    }
   }
 
   // ============ GENERIC PROFESSIONAL MESSAGES ============
@@ -123,7 +91,6 @@ class ToastHelper {
     String message = ToastMessages.serverError;
 
     if (error is String) {
-      // Direct string error
       if (error.toLowerCase().contains('email')) {
         message = ToastMessages.emailNotFound;
       } else if (error.toLowerCase().contains('password')) {
@@ -143,5 +110,103 @@ class ToastHelper {
     }
 
     showError(message);
+  }
+
+  static void _show(
+    String message,
+    _ToastType type, {
+    Color? backgroundColor,
+    Color? textColor,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    final config = _ToastConfig.fromType(type);
+    final bgColor = backgroundColor ?? config.backgroundColor;
+    final fgColor = textColor ?? config.foregroundColor;
+
+    if (Get.isSnackbarOpen) {
+      Get.closeCurrentSnackbar();
+    }
+
+    Get.rawSnackbar(
+      messageText: Text(
+        message,
+        maxLines: 3,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: fgColor,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          height: 1.25,
+        ),
+      ),
+      icon: Icon(config.icon, color: fgColor, size: 22),
+      snackPosition: SnackPosition.TOP,
+      snackStyle: SnackStyle.FLOATING,
+      maxWidth: _maxSnackWidth,
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      borderRadius: 14,
+      backgroundColor: bgColor,
+      leftBarIndicatorColor: config.accentColor,
+      boxShadows: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.18),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+      ],
+      duration: duration,
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+      animationDuration: const Duration(milliseconds: 220),
+      shouldIconPulse: false,
+    );
+  }
+}
+
+class _ToastConfig {
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final Color accentColor;
+  final IconData icon;
+
+  const _ToastConfig({
+    required this.backgroundColor,
+    required this.foregroundColor,
+    required this.accentColor,
+    required this.icon,
+  });
+
+  factory _ToastConfig.fromType(_ToastType type) {
+    switch (type) {
+      case _ToastType.success:
+        return const _ToastConfig(
+          backgroundColor: Color(0xFF0F766E),
+          foregroundColor: Colors.white,
+          accentColor: Color(0xFF5EEAD4),
+          icon: Icons.check_circle_rounded,
+        );
+      case _ToastType.error:
+        return const _ToastConfig(
+          backgroundColor: Color(0xFFB91C1C),
+          foregroundColor: Colors.white,
+          accentColor: Color(0xFFFCA5A5),
+          icon: Icons.error_rounded,
+        );
+      case _ToastType.warning:
+        return const _ToastConfig(
+          backgroundColor: Color(0xFFB45309),
+          foregroundColor: Colors.white,
+          accentColor: Color(0xFFFCD34D),
+          icon: Icons.warning_rounded,
+        );
+      case _ToastType.info:
+        return const _ToastConfig(
+          backgroundColor: Color(0xFF1D4ED8),
+          foregroundColor: Colors.white,
+          accentColor: Color(0xFF93C5FD),
+          icon: Icons.info_rounded,
+        );
+    }
   }
 }

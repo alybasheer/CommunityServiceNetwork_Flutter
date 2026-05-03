@@ -1,3 +1,5 @@
+import 'package:fyp_source_code/services/location_services.dart';
+
 class HelpRequestLocation {
   String? type;
   List<double>? coordinates;
@@ -149,15 +151,12 @@ class HelpRequest {
   }
 
   String get displayLocation {
-    if (locationName != null && locationName!.trim().isNotEmpty) {
+    if (locationName != null &&
+        locationName!.trim().isNotEmpty &&
+        !isGenericLocationLabel(locationName!)) {
       return locationName!;
     }
-    final lat = location?.latitude;
-    final lng = location?.longitude;
-    if (lat != null && lng != null) {
-      return 'Lat ${lat.toStringAsFixed(4)}, Lng ${lng.toStringAsFixed(4)}';
-    }
-    return 'Location unavailable';
+    return 'Resolving nearby area...';
   }
 
   Map<String, dynamic> toJson() {

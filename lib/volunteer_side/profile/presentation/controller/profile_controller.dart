@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/services/location_services.dart';
@@ -50,12 +52,16 @@ class ProfileController extends GetxController {
 
     nameController.text = savedName;
     emailController.text = savedEmail;
-    locationController.text = savedLocation;
+    locationController.text =
+        isGenericLocationLabel(savedLocation)
+            ? 'Resolving nearby area...'
+            : savedLocation;
     role.value = _normalizeRole(_readFirstString(['role']));
     verificationStatus.value = _readFirstString(['verificationStatus']);
     isSwitching.value =
         storage.read('theme') == true || storage.read('dark_mode') == true;
     _syncPreviewFields();
+    unawaited(_resolveSavedLocation(savedLocation));
   }
 
   Future<void> saveProfile() async {
@@ -97,9 +103,11 @@ class ProfileController extends GetxController {
         latitude: position.latitude,
         longitude: position.longitude,
       );
-      locationController.text = locationName;
-      storage.write('profile_location', locationName);
-      _syncPreviewFields();
+      if (locationName == 'Location unavailable') {
+        ToastHelper.showError('Could not resolve your location name.');
+        return;
+      }
+      _setResolvedLocation(locationName);
       ToastHelper.showSuccess('Location updated.');
     } catch (e) {
       ToastHelper.showErrorMessage(e);
@@ -238,6 +246,30 @@ class ProfileController extends GetxController {
     profileName.value = nameController.text.trim();
     profileEmail.value = emailController.text.trim();
     profileLocation.value = locationController.text.trim();
+  }
+
+  Future<void> _resolveSavedLocation(String savedLocation) async {
+    if (!isGenericLocationLabel(savedLocation)) {
+      return;
+    }
+
+    try {
+      final resolvedName = await resolveLocationLabel(savedLocation);
+      if (resolvedName == 'Location unavailable' ||
+          resolvedName.trim().isEmpty) {
+        return;
+      }
+      _setResolvedLocation(resolvedName);
+    } catch (_) {
+      // Keep the resolving label until the user taps Use Current.
+    }
+  }
+
+  void _setResolvedLocation(String locationName) {
+    locationController.text = locationName;
+    storage.write('profile_location', locationName);
+    storage.write('locationName', locationName);
+    _syncPreviewFields();
   }
 
   void _resetLocalProfile() {

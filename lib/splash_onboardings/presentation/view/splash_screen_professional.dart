@@ -24,33 +24,35 @@ class SplashScreenProfessional extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // ANIMATED LOGO/ICON
                     TweenAnimationBuilder<double>(
                       tween: Tween(begin: 0, end: 1),
-                      duration: Duration(milliseconds: 1000),
+                      duration: const Duration(milliseconds: 1100),
+                      curve: Curves.easeOutBack,
                       builder: (context, value, child) {
                         return Transform.scale(
-                          scale: value,
+                          scale: 0.72 + (value * 0.28),
                           child: Opacity(
                             opacity: value,
                             child: Container(
-                              height: 120,
-                              width: 120,
+                              height: 132,
+                              width: 132,
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 20,
-                                    spreadRadius: 5,
+                                    color: Colors.black.withValues(alpha: 0.18),
+                                    blurRadius: 24,
+                                    offset: const Offset(0, 12),
                                   ),
                                 ],
                               ),
-                              child: Icon(
-                                Icons.favorite,
-                                size: 60,
-                                color: AppColors.emergencyRed,
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/logo.png',
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ),
@@ -65,7 +67,7 @@ class SplashScreenProfessional extends StatelessWidget {
                       style: AppTextStyling.title_30M.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
+                        letterSpacing: 0,
                       ),
                     ),
                     AppSize.mHeight,

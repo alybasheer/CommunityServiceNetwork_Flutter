@@ -31,7 +31,9 @@ getDio() {
         // print('RequestBody ${jsonEncode(options.data)}');
         print("Method -- ${options.method}");
 
-        options.baseUrl = options.copyWith(baseUrl: ApiNames.baseUrl).baseUrl;
+        options.baseUrl = options
+            .copyWith(baseUrl: ApiNames.normalizedBaseUrl)
+            .baseUrl;
         return handler.next(options);
       },
       onResponse: (Response response, handler) {

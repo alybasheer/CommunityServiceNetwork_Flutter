@@ -26,10 +26,16 @@ class RequestHelpController extends GetxController {
   final selectedSubcategory = Rx<String?>(null);
 
   final descriptionController = TextEditingController();
-  final locationLabel = 'Location Auto-Detected'.obs;
+  final locationLabel = 'Resolving nearby area...'.obs;
   final isSubmitting = false.obs;
 
   final HelpRequestRepo _repo = HelpRequestRepo();
+
+  @override
+  void onInit() {
+    super.onInit();
+    _resolveCurrentLocationLabel();
+  }
 
   List<String> get availableSubcategories {
     return subcategoriesByCategory[selectedCategory.value] ?? <String>[];
@@ -69,6 +75,10 @@ class RequestHelpController extends GetxController {
 
     try {
       final position = await getCurrentLocation();
+      final resolvedName = await getLocationNameFromCoordinates(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
       final reqBody = {
         'category': selectedCategory.value,
         'subCategory': selectedSubcategory.value,
@@ -76,6 +86,7 @@ class RequestHelpController extends GetxController {
         'image': null,
         'latitude': position.latitude,
         'longitude': position.longitude,
+        if (resolvedName != 'Location unavailable') 'locationName': resolvedName,
       };
 
       await _repo.createRequest(reqBody);
@@ -92,5 +103,20 @@ class RequestHelpController extends GetxController {
   void onClose() {
     descriptionController.dispose();
     super.onClose();
+  }
+
+  Future<void> _resolveCurrentLocationLabel() async {
+    try {
+      final position = await getCurrentLocation();
+      final resolvedName = await getLocationNameFromCoordinates(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
+      if (resolvedName != 'Location unavailable' && resolvedName.trim().isNotEmpty) {
+        locationLabel.value = resolvedName;
+      }
+    } catch (_) {
+      locationLabel.value = 'Location unavailable';
+    }
   }
 }

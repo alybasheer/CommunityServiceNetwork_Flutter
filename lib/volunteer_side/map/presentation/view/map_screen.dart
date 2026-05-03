@@ -63,13 +63,16 @@ class _MapScreenState extends State<MapScreen> {
               users: mapCntrl.mapUsers,
               mapController: flutterMapController,
             ),
-            _MapFilterBar(
+            _MapControlLayer(
               selected: mapCntrl.selectedRoleFilter.value,
+              visibleCount: mapCntrl.mapUsers.length,
+              hasLiveLocation: latlng != null,
               onSelected: mapCntrl.setRoleFilter,
             ),
             getLocation(
               currentLocation: latlng,
               mapController: flutterMapController,
+              bottom: activeRequest == null ? 96 : 228,
             ),
             if (activeRequest != null)
               _ActiveRequestPanel(
@@ -125,11 +128,18 @@ class _MapScreenState extends State<MapScreen> {
   }
 }
 
-class _MapFilterBar extends StatelessWidget {
+class _MapControlLayer extends StatelessWidget {
   final String selected;
+  final int visibleCount;
+  final bool hasLiveLocation;
   final ValueChanged<String> onSelected;
 
-  const _MapFilterBar({required this.selected, required this.onSelected});
+  const _MapControlLayer({
+    required this.selected,
+    required this.visibleCount,
+    required this.hasLiveLocation,
+    required this.onSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -139,43 +149,175 @@ class _MapFilterBar extends StatelessWidget {
       right: AppSize.m,
       child: SafeArea(
         bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _MapFilterChip(
+                    label: 'All',
+                    icon: Icons.layers_rounded,
+                    value: 'all',
+                    selected: selected,
+                    color: AppColors.steelBlue,
+                    onSelected: onSelected,
+                  ),
+                  SizedBox(width: AppSize.xs),
+                  _MapFilterChip(
+                    label: 'Volunteers',
+                    icon: Icons.volunteer_activism_rounded,
+                    value: 'volunteer',
+                    selected: selected,
+                    color: AppColors.reliefGreen,
+                    onSelected: onSelected,
+                  ),
+                  SizedBox(width: AppSize.xs),
+                  _MapFilterChip(
+                    label: 'Users',
+                    icon: Icons.person_pin_circle_rounded,
+                    value: 'requestee',
+                    selected: selected,
+                    color: AppColors.amberOrange,
+                    onSelected: onSelected,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: AppSize.xsH),
+            _MapStatusChip(
+              text: _statusText,
+              isLive: hasLiveLocation,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String get _statusText {
+    final scope =
+        selected == 'volunteer'
+            ? 'volunteers'
+            : selected == 'requestee'
+            ? 'users'
+            : 'people';
+    return '$visibleCount nearby $scope';
+  }
+}
+
+class _MapFilterChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final String value;
+  final String selected;
+  final Color color;
+  final ValueChanged<String> onSelected;
+
+  const _MapFilterChip({
+    required this.label,
+    required this.icon,
+    required this.value,
+    required this.selected,
+    required this.color,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isSelected = selected == value;
+
+    return Material(
+      color: isSelected ? color : scheme.surface,
+      borderRadius: BorderRadius.circular(999),
+      elevation: isSelected ? 4 : 2,
+      shadowColor: Colors.black.withValues(alpha: 0.16),
+      child: InkWell(
+        onTap: () => onSelected(value),
+        borderRadius: BorderRadius.circular(999),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: AppSize.s, vertical: 6),
+          height: 38,
+          padding: EdgeInsets.symmetric(horizontal: AppSize.s),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Theme.of(context).dividerColor),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color:
+                  isSelected
+                      ? color.withValues(alpha: 0.35)
+                      : Theme.of(context).dividerColor,
+            ),
           ),
-          child: SegmentedButton<String>(
-            selected: {selected},
-            style: ButtonStyle(visualDensity: VisualDensity.compact),
-            segments: const [
-              ButtonSegment(
-                value: 'all',
-                icon: Icon(Icons.layers_rounded),
-                label: Text('All'),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 17,
+                color: isSelected ? Colors.white : color,
               ),
-              ButtonSegment(
-                value: 'volunteer',
-                icon: Icon(Icons.volunteer_activism_rounded),
-                label: Text('Volunteers'),
-              ),
-              ButtonSegment(
-                value: 'requestee',
-                icon: Icon(Icons.person_pin_circle_rounded),
-                label: Text('Users'),
+              SizedBox(width: 6),
+              Text(
+                label,
+                style: AppTextStyling.body_12S.copyWith(
+                  color: isSelected ? Colors.white : scheme.onSurface,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
               ),
             ],
-            onSelectionChanged: (value) => onSelected(value.first),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MapStatusChip extends StatelessWidget {
+  final String text;
+  final bool isLive;
+
+  const _MapStatusChip({required this.text, required this.isLive});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: AppSize.s, vertical: 7),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Theme.of(context).dividerColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: isLive ? AppColors.reliefGreen : scheme.onSurfaceVariant,
+              shape: BoxShape.circle,
+            ),
+          ),
+          SizedBox(width: 7),
+          Text(
+            text,
+            style: AppTextStyling.body_12S.copyWith(
+              color: scheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }

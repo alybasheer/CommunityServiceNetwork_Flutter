@@ -1,5 +1,13 @@
 class ApiNames {
-  static const baseUrl = 'https://backendforwehelp.onrender.com/';
+  // Keep a single production backend source to avoid accidental environment drift.
+  static const productionBaseUrl = 'https://backendforwehelp.onrender.com/';
+  static const baseUrl = productionBaseUrl;
+  static String get normalizedBaseUrl => baseUrl.endsWith('/')
+      ? baseUrl
+      : '$baseUrl/';
+  static String get socketBaseUrl => normalizedBaseUrl.endsWith('/')
+      ? normalizedBaseUrl.substring(0, normalizedBaseUrl.length - 1)
+      : normalizedBaseUrl;
   static const signup = 'authentication/signup';
   static const login = 'authentication/login';
   static const voulnteerVerification = 'volunteer/apply';

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 
@@ -19,39 +18,65 @@ class RequestDropdownField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppSize.s),
-      decoration: BoxDecoration(
-        color: AppColors.pureWhite,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.lightBorderGray),
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final fieldColor = theme.inputDecorationTheme.fillColor ?? scheme.surface;
+    final hintColor = scheme.onSurfaceVariant;
+    final menuColor = scheme.brightness == Brightness.dark
+        ? const Color(0xFF111827)
+        : scheme.surface;
+    final textStyle = AppTextStyling.body_14M.copyWith(
+      color: scheme.onSurface,
+    );
+    final effectiveValue = items.contains(value) ? value : null;
+
+    return DropdownButtonFormField<String>(
+      value: effectiveValue,
+      isExpanded: true,
+      dropdownColor: menuColor,
+      iconEnabledColor: scheme.onSurface,
+      iconDisabledColor: hintColor,
+      style: textStyle,
+      hint: Text(
+        hint,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTextStyling.body_14M.copyWith(color: hintColor),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          value: value,
-          hint: Text(
-            hint,
-            style: AppTextStyling.body_14M.copyWith(
-              color: AppColors.mediumGray,
-            ),
-          ),
-          items: items
-              .map(
-                (item) => DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(
-                    item,
-                    style: AppTextStyling.body_14M.copyWith(
-                      color: AppColors.darkGray,
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-          onChanged: onChanged,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: fieldColor,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppSize.s,
+          vertical: 14,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.dividerColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.primary, width: 1.4),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: theme.dividerColor),
         ),
       ),
+      items: items
+          .map(
+            (item) => DropdownMenuItem<String>(
+              value: item,
+              child: Text(
+                item,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textStyle,
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: items.isEmpty ? null : onChanged,
     );
   }
 }

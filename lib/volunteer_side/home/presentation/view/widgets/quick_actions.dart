@@ -39,29 +39,32 @@ Widget actionButton({
   required Color backgroundColor,
   required VoidCallback onTap,
 }) {
+  final scheme = Get.theme.colorScheme;
+
   return Expanded(
     child: GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: backgroundColor.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: backgroundColor.withValues(alpha: 0.16)),
         ),
         padding: EdgeInsets.symmetric(
-          vertical: AppSize.mH,
+          vertical: AppSize.sH,
           horizontal: AppSize.s,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 20),
+            Icon(icon, color: backgroundColor, size: 20),
             SizedBox(width: AppSize.s),
             Text(
               label,
               textAlign: TextAlign.center,
               style: AppTextStyling.body_14M.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
+                color: scheme.onSurface,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],

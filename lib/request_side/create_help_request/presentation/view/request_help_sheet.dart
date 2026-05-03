@@ -4,7 +4,6 @@ import 'package:fyp_source_code/request_side/create_help_request/presentation/vi
 import 'package:fyp_source_code/request_side/create_help_request/presentation/view/widgets/request_location_chip.dart' as request_widgets;
 import 'package:fyp_source_code/request_side/create_help_request/presentation/view/widgets/request_upload_card.dart';
 import 'package:get/get.dart';
-import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 
@@ -16,17 +15,22 @@ class RequestHelpSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<RequestHelpController>();
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return SafeArea(
       child: Container(
         height: AppSize.hp(86),
         padding: EdgeInsets.symmetric(horizontal: AppSize.m, vertical: AppSize.mH),
         decoration: BoxDecoration(
-          color: AppColors.pureWhite,
+          color: scheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: SingleChildScrollView(
-          child: Column(
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(right: AppSize.xs),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
@@ -34,7 +38,7 @@ class RequestHelpSheet extends StatelessWidget {
                   width: 48,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: AppColors.lightBorderGray,
+                    color: theme.dividerColor,
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -43,7 +47,7 @@ class RequestHelpSheet extends StatelessWidget {
               Text(
                 'Request Help',
                 style: AppTextStyling.title_18M.copyWith(
-                  color: AppColors.darkGray,
+                  color: scheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -51,14 +55,14 @@ class RequestHelpSheet extends StatelessWidget {
               Text(
                 'Describe your situation and we will connect you with helpers.',
                 style: AppTextStyling.body_14M.copyWith(
-                  color: AppColors.mediumGray,
+                  color: scheme.onSurfaceVariant,
                 ),
               ),
               SizedBox(height: AppSize.lH),
               Text(
                 'Category',
                 style: AppTextStyling.body_14M.copyWith(
-                  color: AppColors.darkGray,
+                  color: scheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -75,7 +79,7 @@ class RequestHelpSheet extends StatelessWidget {
               Text(
                 'Subcategory',
                 style: AppTextStyling.body_14M.copyWith(
-                  color: AppColors.darkGray,
+                  color: scheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -92,7 +96,7 @@ class RequestHelpSheet extends StatelessWidget {
               Text(
                 'Description',
                 style: AppTextStyling.body_14M.copyWith(
-                  color: AppColors.darkGray,
+                  color: scheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -106,7 +110,7 @@ class RequestHelpSheet extends StatelessWidget {
                   icon: const Icon(Icons.auto_fix_high, size: 18),
                   label: const Text('Improve'),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.steelBlue,
+                    foregroundColor: scheme.primary,
                   ),
                 ),
               ),
@@ -125,8 +129,8 @@ class RequestHelpSheet extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () => Get.back(),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.steelBlue,
-                        side: BorderSide(color: AppColors.steelBlue.withValues(alpha: 0.4)),
+                        foregroundColor: scheme.primary,
+                        side: BorderSide(color: scheme.primary.withValues(alpha: 0.4)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -142,7 +146,7 @@ class RequestHelpSheet extends StatelessWidget {
                             ? null
                             : controller.submitRequest,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.steelBlue,
+                          backgroundColor: scheme.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -156,7 +160,8 @@ class RequestHelpSheet extends StatelessWidget {
                 ],
               ),
               SizedBox(height: AppSize.lH),
-            ],
+              ],
+            ),
           ),
         ),
       ),

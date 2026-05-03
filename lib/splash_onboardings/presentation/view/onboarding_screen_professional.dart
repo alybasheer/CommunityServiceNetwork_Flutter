@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fyp_source_code/splash_onboardings/presentation/controller/onboarding_controller.dart';
-import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
+import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
+import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:get/get.dart';
 
 class OnboardingScreenProfessional extends StatelessWidget {
@@ -11,116 +11,37 @@ class OnboardingScreenProfessional extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(OnboardingController());
+    final scheme = Theme.of(context).colorScheme;
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Column(
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Column(
           children: [
             Expanded(
-              child: Stack(
-                children: [
-                  // PageView with full-screen constraint
-                  PageView.builder(
-                    controller: controller.pageController,
-                    onPageChanged: controller.onPageChanged,
-                    itemCount: controller.onboardingPages.length,
-                    itemBuilder: (context, index) {
-                      return _OnboardingPage(
-                        model: controller.onboardingPages[index],
-                        index: index,
-                      );
-                    },
-                  ),
-
-                  // Bottom navigation (Skip / Dots / Next)
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      color: Colors.white,
-                      child: Obx(() {
-                        final isLastPage = controller.isLastPage.value;
-
-                        return Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 20.w,
-                            vertical: 20.h,
-                          ),
-                          child: Row(
-                            children: [
-                              // SKIP BUTTON
-                              TextButton(
-                                onPressed: controller.skipOnboarding,
-                                child: Text(
-                                  'Skip',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-
-                              // DOT INDICATORS (Flexible to prevent overflow)
-                              Expanded(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(
-                                    controller.onboardingPages.length,
-                                    (index) => Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 2.w,
-                                      ),
-                                      child: Obx(() {
-                                        final isActive =
-                                            controller.currentPage.value ==
-                                            index;
-                                        return AnimatedContainer(
-                                          duration: const Duration(
-                                            milliseconds: 300,
-                                          ),
-                                          width: isActive ? 16.w : 8.w,
-                                          height: 8.h,
-                                          decoration: BoxDecoration(
-                                            color:
-                                                isActive
-                                                    ? const Color(0xFF6BCB77)
-                                                    : Colors.grey[300],
-                                            borderRadius: BorderRadius.circular(
-                                              4.r,
-                                            ),
-                                          ),
-                                        );
-                                      }),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // NEXT / DONE BUTTON
-                              TextButton(
-                                onPressed:
-                                    isLastPage
-                                        ? controller.finishOnboarding
-                                        : controller.nextPage,
-                                child: Text(
-                                  isLastPage ? 'Done' : 'Next',
-                                  style: TextStyle(
-                                    color: const Color(0xFF6BCB77),
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                ],
+              child: PageView.builder(
+                controller: controller.pageController,
+                onPageChanged: controller.onPageChanged,
+                itemCount: controller.onboardingPages.length,
+                itemBuilder: (context, index) {
+                  return _OnboardingPage(
+                    model: controller.onboardingPages[index],
+                    index: index,
+                  );
+                },
+              ),
+            ),
+            Obx(
+              () => _OnboardingControls(
+                currentPage: controller.currentPage.value,
+                pageCount: controller.onboardingPages.length,
+                isLastPage: controller.isLastPage.value,
+                onSkip: controller.skipOnboarding,
+                onNext:
+                    controller.isLastPage.value
+                        ? controller.finishOnboarding
+                        : controller.nextPage,
+                scheme: scheme,
               ),
             ),
           ],
@@ -138,113 +59,357 @@ class _OnboardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = 110.w;
+    final scheme = Theme.of(context).colorScheme;
+    final visualHeight = 250.h.clamp(220.0, 300.0);
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        AppSize.xxlHeight, // Top spacing
-        // Animated Icon
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: 1),
-          duration: const Duration(milliseconds: 800),
-          curve: Curves.easeOutBack,
-          builder: (context, value, child) {
-            return Transform.scale(
-              scale: 0.3 + value * 0.7,
-              child: Opacity(opacity: value.clamp(0.0, 1.0), child: child),
-            );
-          },
-          child: Container(
-            width: iconSize,
-            height: iconSize,
-            decoration: BoxDecoration(
-              color: model.iconColor.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                model.assetsImg,
-                width: 60.w,
-                height: 60.h,
-              ),
-            ),
-          ),
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 16.h),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: MediaQuery.sizeOf(context).height - 190.h,
         ),
-
-        AppSize.xxxlHeight, // Spacing between icon and text
-        // Animated Title
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, child) {
-              return Transform.translate(
-                offset: Offset(0, (1 - value) * 30),
-                child: Opacity(opacity: value, child: child),
-              );
-            },
-            child: Text(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _VisualPanel(
+              color: model.iconColor,
+              index: index,
+              height: visualHeight,
+            ),
+            SizedBox(height: 34.h),
+            Text(
               model.title,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 26.sp,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF2D3436),
+              style: AppTextStyling.title_30M.copyWith(
+                color: scheme.onSurface,
+                fontWeight: FontWeight.w800,
+                height: 1.12,
               ),
             ),
-          ),
-        ),
-
-        SizedBox(height: 15.h),
-
-        // Animated Description
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 900),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, child) {
-              return Transform.translate(
-                offset: Offset(0, (1 - value) * 30),
-                child: Opacity(opacity: value, child: child),
-              );
-            },
-            child: Text(
+            SizedBox(height: 14.h),
+            Text(
               model.description,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15.sp,
-                color: Colors.grey[600],
-                height: 1.4,
-                fontWeight: FontWeight.w400,
+              style: AppTextStyling.body_14M.copyWith(
+                color: scheme.onSurfaceVariant,
+                height: 1.45,
               ),
             ),
-          ),
+          ],
         ),
+      ),
+    );
+  }
+}
 
-        const Spacer(),
+class _VisualPanel extends StatelessWidget {
+  final Color color;
+  final int index;
+  final double height;
 
-        // Decorative Shape
-        Opacity(
-          opacity: index % 2 == 0 ? 0.15 : 0.10,
-          child: Container(
-            width: index % 2 == 0 ? 240.w : 160.w,
-            height: index % 2 == 0 ? 80.h : 160.w,
-            decoration: BoxDecoration(
-              color: model.iconColor,
-              shape: index % 2 == 0 ? BoxShape.rectangle : BoxShape.circle,
-              borderRadius: index % 2 == 0 ? BorderRadius.circular(40.r) : null,
+  const _VisualPanel({
+    required this.color,
+    required this.index,
+    required this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 850),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, (1 - value) * 22),
+          child: Opacity(opacity: value, child: child),
+        );
+      },
+      child: Container(
+        height: height,
+        width: double.infinity,
+        padding: EdgeInsets.all(22.w),
+        decoration: BoxDecoration(
+          color: scheme.surface,
+          borderRadius: BorderRadius.circular(26.r),
+          border: Border.all(color: color.withValues(alpha: 0.18)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.12),
+              blurRadius: 26,
+              offset: const Offset(0, 14),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -22,
+              right: -16,
+              child: _SoftCircle(size: 106.w, color: color),
+            ),
+            Positioned(
+              bottom: -16,
+              left: -12,
+              child: _SoftCircle(size: 72.w, color: color.withValues(alpha: 0.7)),
+            ),
+            Center(
+              child: Container(
+                width: 150.w,
+                height: 150.w,
+                padding: EdgeInsets.all(28.w),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: color.withValues(alpha: 0.20)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.18),
+                      blurRadius: 22,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  _mainIcon,
+                  color: color,
+                  size: 76.sp,
+                ),
+              ),
+            ),
+            ..._contextBadges(color),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData get _mainIcon {
+    switch (index) {
+      case 0:
+        return Icons.sos_rounded;
+      case 1:
+        return Icons.map_rounded;
+      case 2:
+        return Icons.groups_rounded;
+      case 3:
+        return Icons.notifications_active_rounded;
+      default:
+        return Icons.volunteer_activism_rounded;
+    }
+  }
+
+  List<Widget> _contextBadges(Color color) {
+    final badges = <List<dynamic>>[
+      [Icons.sos_rounded, 'SOS'],
+      [Icons.my_location_rounded, 'Live'],
+      [Icons.groups_rounded, 'Team'],
+      [Icons.notifications_active_rounded, 'Alert'],
+      [Icons.check_circle_rounded, 'Ready'],
+    ];
+    final badge = badges[index % badges.length];
+
+    return [
+      Positioned(
+        left: 8,
+        top: 10,
+        child: _MiniBadge(
+          icon: badge[0] as IconData,
+          label: badge[1] as String,
+          color: color,
+        ),
+      ),
+      Positioned(
+        right: 8,
+        bottom: 10,
+        child: _MiniBadge(
+          icon: Icons.verified_rounded,
+          label: 'Trusted',
+          color: AppColors.reliefGreen,
+        ),
+      ),
+    ];
+  }
+}
+
+class _SoftCircle extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const _SoftCircle({required this.size, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withValues(alpha: 0.10),
+      ),
+    );
+  }
+}
+
+class _MiniBadge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  const _MiniBadge({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 15.sp),
+          SizedBox(width: 5.w),
+          Text(
+            label,
+            style: TextStyle(
+              color: scheme.onSurface,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+}
 
-        SizedBox(height: 100.h), // Space for bottom nav
-      ],
+class _OnboardingControls extends StatelessWidget {
+  final int currentPage;
+  final int pageCount;
+  final bool isLastPage;
+  final VoidCallback onSkip;
+  final VoidCallback onNext;
+  final ColorScheme scheme;
+
+  const _OnboardingControls({
+    required this.currentPage,
+    required this.pageCount,
+    required this.isLastPage,
+    required this.onSkip,
+    required this.onNext,
+    required this.scheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 22.h),
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              pageCount,
+              (index) {
+                final isActive = index == currentPage;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  margin: EdgeInsets.symmetric(horizontal: 3.w),
+                  width: isActive ? 20.w : 7.w,
+                  height: 7.h,
+                  decoration: BoxDecoration(
+                    color:
+                        isActive
+                            ? AppColors.safetyBlue
+                            : scheme.outline.withValues(alpha: 0.32),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(
+                flex: 6,
+                child: SizedBox(
+                  height: 52.h,
+                  child: OutlinedButton.icon(
+                onPressed: onSkip,
+                    icon: Icon(
+                      Icons.flash_on_rounded,
+                      size: 18.sp,
+                      color: AppColors.emergencyRed,
+                    ),
+                    label: Text(
+                      'Skip to App',
+                      style: TextStyle(
+                        color: AppColors.emergencyRed,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        color: AppColors.emergencyRed.withValues(alpha: 0.42),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                flex: 4,
+                child: SizedBox(
+                  height: 52.h,
+                  child: ElevatedButton(
+                    onPressed: onNext,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.safetyBlue,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                    ),
+                    child: Text(
+                      isLastPage ? 'Get Started' : 'Next',
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

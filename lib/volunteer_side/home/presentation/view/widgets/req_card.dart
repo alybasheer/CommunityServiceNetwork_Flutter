@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
-import 'package:fyp_source_code/utilities/reuse_components/container_decoration.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 import 'package:fyp_source_code/volunteer_side/home/presentation/view/widgets/request_details_dialog.dart';
 
@@ -15,13 +14,21 @@ Widget requestCard(
   bool isAccepting = false,
   VoidCallback? onAccept,
 }) {
+  final theme = Get.theme;
+  final scheme = theme.colorScheme;
+
   return Container(
-    decoration: ContainerDecorations.customShadowDecoration(
-      backgroundColor: AppColors.pureWhite,
-      borderRadius: 12,
-      shadowColor: AppColors.darkGray.withOpacity(0.1),
-      blurRadius: 8,
-      spreadRadius: 0,
+    decoration: BoxDecoration(
+      color: scheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: theme.dividerColor),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.06),
+          blurRadius: 10,
+          offset: const Offset(0, 5),
+        ),
+      ],
     ),
     child: Material(
       color: Colors.transparent,
@@ -73,7 +80,7 @@ Widget requestCard(
                         Text(
                           title,
                           style: AppTextStyling.title_16M.copyWith(
-                            color: AppColors.darkGray,
+                            color: scheme.onSurface,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -111,7 +118,7 @@ Widget requestCard(
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyling.body_14M.copyWith(
-                  color: AppColors.darkGray,
+                  color: scheme.onSurface,
                   height: 1.4,
                 ),
               ),
@@ -121,14 +128,14 @@ Widget requestCard(
                   Icon(
                     Icons.location_on_outlined,
                     size: 16,
-                    color: AppColors.darkGray,
+                    color: scheme.onSurfaceVariant,
                   ),
                   SizedBox(width: AppSize.s),
                   Expanded(
                     child: Text(
                       location,
                       style: AppTextStyling.body_12S.copyWith(
-                        color: AppColors.darkGray,
+                        color: scheme.onSurfaceVariant,
                       ),
                     ),
                   ),

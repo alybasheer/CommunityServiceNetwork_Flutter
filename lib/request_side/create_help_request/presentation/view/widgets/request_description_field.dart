@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 
@@ -13,24 +12,27 @@ class RequestDescriptionField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
     return Container(
       padding: EdgeInsets.all(AppSize.s),
       decoration: BoxDecoration(
-        color: AppColors.pureWhite,
+        color: theme.inputDecorationTheme.fillColor ?? scheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.lightBorderGray),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: TextField(
         controller: controller,
         minLines: 4,
         maxLines: 6,
         style: AppTextStyling.body_14M.copyWith(
-          color: AppColors.darkGray,
+          color: scheme.onSurface,
         ),
         decoration: InputDecoration(
           hintText: 'Describe your situation... ',
           hintStyle: AppTextStyling.body_14M.copyWith(
-            color: AppColors.mediumGray,
+            color: scheme.onSurfaceVariant,
           ),
           border: InputBorder.none,
         ),

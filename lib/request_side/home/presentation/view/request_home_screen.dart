@@ -56,18 +56,196 @@ class RequestHomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: _RequestBottomNavBar(controller: controller),
-      floatingActionButton: Obx(
-        () => FloatingActionButton.extended(
-          onPressed: controller.isSendingSos.value ? null : controller.sendSos,
-          backgroundColor: AppColors.emergencyRed,
-          icon: const Icon(Icons.sos, color: Colors.white),
-          label: Text(
-            controller.isSendingSos.value ? 'Sending' : 'SOS',
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _SosEmergencyBar(controller: controller),
+          _RequestBottomNavBar(controller: controller),
+        ],
       ),
+    );
+  }
+}
+
+class _SosEmergencyBar extends StatelessWidget {
+  final RequestHomeController controller;
+
+  const _SosEmergencyBar({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      padding: EdgeInsets.fromLTRB(
+        AppSize.m,
+        AppSize.mH,
+        AppSize.m,
+        AppSize.sH,
+      ),
+      child: Obx(
+        () {
+          final isSending = controller.isSendingSos.value;
+
+          return _SosPulseButton(
+            isSending: isSending,
+            onPressed: isSending ? null : controller.sendSos,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SosPulseButton extends StatefulWidget {
+  final bool isSending;
+  final VoidCallback? onPressed;
+
+  const _SosPulseButton({
+    required this.isSending,
+    required this.onPressed,
+  });
+
+  @override
+  State<_SosPulseButton> createState() => _SosPulseButtonState();
+}
+
+class _SosPulseButtonState extends State<_SosPulseButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1650),
+    )..repeat(reverse: true);
+    _pulse = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (context, child) {
+        final glow = _pulse.value;
+
+        return Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              top: -8 - (glow * 5),
+              bottom: -8 - (glow * 5),
+              left: 4 - (glow * 6),
+              right: 4 - (glow * 6),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.emergencyRed.withValues(
+                    alpha: 0.10 + (glow * 0.08),
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              top: -4 - (glow * 3),
+              bottom: -4 - (glow * 3),
+              left: 9 - (glow * 4),
+              right: 9 - (glow * 4),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  color: AppColors.emergencyRed.withValues(
+                    alpha: 0.16 + (glow * 0.10),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.emergencyRed.withValues(
+                        alpha: 0.20 + (glow * 0.18),
+                      ),
+                      blurRadius: 18 + (glow * 12),
+                      spreadRadius: 1 + (glow * 3),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: widget.onPressed,
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  backgroundColor: AppColors.emergencyRed,
+                  disabledBackgroundColor:
+                      AppColors.emergencyRed.withValues(alpha: 0.72),
+                  foregroundColor: Colors.white,
+                  disabledForegroundColor: Colors.white,
+                  elevation: 0,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Ink(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.13),
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.08),
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.isSending)
+                          const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        else
+                          const Icon(
+                            Icons.warning_rounded,
+                            color: Colors.white,
+                            size: 21,
+                          ),
+                        SizedBox(width: AppSize.xs),
+                        Text(
+                          widget.isSending ? 'Sending SOS' : 'SOS Emergency',
+                          style: AppTextStyling.body_14M.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

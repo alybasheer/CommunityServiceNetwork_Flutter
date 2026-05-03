@@ -59,6 +59,7 @@ class RequestHomeController extends GetxController {
         longitude: position.longitude,
       );
       activeRequests.assignAll(active.where(_isRealActiveRequest));
+      unawaited(_resolveRequestLocations(activeRequests));
       nearbyVolunteers.assignAll(volunteers);
     } catch (e) {
       ToastHelper.showErrorMessage(e);
@@ -71,11 +72,15 @@ class RequestHomeController extends GetxController {
     isSendingSos.value = true;
     try {
       final position = await getCurrentLocation();
+      final locationName = await getLocationNameFromCoordinates(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
       await _repo.createSos({
         'title': 'SOS Emergency',
         'latitude': position.latitude,
         'longitude': position.longitude,
-        'locationName': 'Current location',
+        if (locationName != 'Location unavailable') 'locationName': locationName,
       });
       ToastHelper.showSuccess('SOS sent.');
       await refreshDashboard();
@@ -120,6 +125,38 @@ class RequestHomeController extends GetxController {
         status == 'pending' ||
         status == 'accepted' ||
         status == 'in_progress';
+  }
+
+  Future<void> _resolveRequestLocations(List<HelpRequest> requests) async {
+    var changed = false;
+    for (final request in requests) {
+      if (request.locationName != null &&
+          request.locationName!.trim().isNotEmpty &&
+          !isGenericLocationLabel(request.locationName!)) {
+        continue;
+      }
+
+      final lat = request.location?.latitude;
+      final lng = request.location?.longitude;
+      if (lat == null || lng == null) {
+        continue;
+      }
+
+      final resolvedName = await getLocationNameFromCoordinates(
+        latitude: lat,
+        longitude: lng,
+      );
+      if (resolvedName == 'Location unavailable' || resolvedName.trim().isEmpty) {
+        continue;
+      }
+
+      request.locationName = resolvedName;
+      changed = true;
+    }
+
+    if (changed) {
+      activeRequests.refresh();
+    }
   }
 
   void _connectFlowEvents() {

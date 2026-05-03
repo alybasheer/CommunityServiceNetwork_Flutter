@@ -14,271 +14,421 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authController = Get.put(AuthController());
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSize.l),
-            child: Form(
-              key: authController.loginFormKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppSize.xxxlHeight,
-                  // HEADER
-                  Text(
-                    "Welcome Back!",
-                    style: AppTextStyling.title_30M.copyWith(
-                      color: AppColors.safetyBlue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  AppSize.mHeight,
-                  Text(
-                    "Sign in to continue helping your community",
-                    style: AppTextStyling.body_12S.copyWith(
-                      color: AppColors.grey,
-                      height: 1.5,
-                    ),
-                  ),
-                  AppSize.xxxlHeight,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final availableHeight = constraints.maxHeight;
+            final logoSize = (availableHeight * 0.14).clamp(82.0, 118.0);
 
-                  // EMAIL SECTION
-                  Text(
-                    'Email Address',
-                    style: AppTextStyling.body_12S.copyWith(
-                      color: AppColors.darkGray,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  AppSize.mHeight,
-                  TextFormField(
-                    controller: authController.emailController,
-                    validator: (val) => authController.validateEmail(val),
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      hintText: "example@email.com",
-                      hintStyle: AppTextStyling.body_12S.copyWith(
-                        color: AppColors.lightGrey,
-                      ),
-                      filled: true,
-                      fillColor: Color(0xFFF5F7FA),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AppColors.lightBorderGray,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: AppColors.lightBorderGray,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: AppColors.safetyBlue,
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppSize.m,
-                        vertical: AppSize.m,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.email_outlined,
-                        color: AppColors.steelBlue,
-                      ),
-                    ),
-                  ),
-                  AppSize.lHeight,
-
-                  // PASSWORD SECTION
-                  Text(
-                    'Password',
-                    style: AppTextStyling.body_12S.copyWith(
-                      color: AppColors.darkGray,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  AppSize.mHeight,
-                  Obx(
-                    () => TextFormField(
-                      controller: authController.passController,
-                      obscureText: !authController.isPasswordVisible.value,
-                      validator: (val) => authController.validatePassword(val),
-                      decoration: InputDecoration(
-                        hintText: "••••••••",
-                        hintStyle: AppTextStyling.body_12S.copyWith(
-                          color: AppColors.lightGrey,
-                        ),
-                        filled: true,
-                        fillColor: Color(0xFFF5F7FA),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: AppColors.lightBorderGray,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.lightBorderGray,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.safetyBlue,
-                            width: 2,
-                          ),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSize.m,
-                          vertical: AppSize.m,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.lock_outlined,
-                          color: AppColors.steelBlue,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            authController.isPasswordVisible.value
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: AppColors.grey,
-                          ),
-                          onPressed: authController.togglePasswordVisibility,
-                        ),
-                      ),
-                    ),
-                  ),
-                  AppSize.lHeight,
-
-                  // REMEMBER ME & FORGOT PASSWORD
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Obx(
-                        () => GestureDetector(
-                          onTap:
-                              () => authController.toggleRememberMe(
-                                !authController.isRememberMe.value,
-                              ),
-                          child: Row(
-                            children: [
-                              Checkbox(
-                                value: authController.isRememberMe.value,
-                                onChanged:
-                                    (value) =>
-                                        authController.toggleRememberMe(value!),
-                                activeColor: AppColors.safetyBlue,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(4),
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: AppSize.l),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: AppSize.lH),
+                  child: Form(
+                    key: authController.loginFormKey,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 430),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(height: availableHeight * 0.035),
+                          _LoginHeader(scheme: scheme, logoSize: logoSize),
+                          SizedBox(height: AppSize.lH),
+                          _LoginCard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _AuthTextField(
+                                  controller: authController.emailController,
+                                  label: 'Email Address',
+                                  hint: 'example@email.com',
+                                  icon: Icons.email_outlined,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: authController.validateEmail,
                                 ),
-                              ),
-                              Text(
-                                'Remember me',
-                                style: AppTextStyling.body_12S.copyWith(
-                                  color: AppColors.steelBlue,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          ToastHelper.showInfo(
-                            'Password reset feature coming soon',
-                          );
-                        },
-                        child: Text(
-                          "Forgot Password?",
-                          style: AppTextStyling.body_12S.copyWith(
-                            color: AppColors.emergencyRed,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  AppSize.xxxlHeight,
-
-                  // LOGIN BUTTON
-                  Obx(
-                    () => SizedBox(
-                      width: double.infinity,
-                      height: AppSize.buttonHeight,
-                      child: ElevatedButton(
-                        onPressed:
-                            authController.isLoading.value
-                                ? null
-                                : () => authController.onLogin(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.safetyBlue,
-                          disabledBackgroundColor: AppColors.lightGrey,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 0,
-                        ),
-                        child:
-                            authController.isLoading.value
-                                ? AppShimmer(
-                                  child: Container(
-                                    height: 18,
-                                    width: 88,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.35),
-                                      borderRadius: BorderRadius.circular(8),
+                                SizedBox(height: AppSize.mH),
+                                Obx(
+                                  () => _AuthTextField(
+                                    controller: authController.passController,
+                                    label: 'Password',
+                                    hint: 'Enter your password',
+                                    icon: Icons.lock_outlined,
+                                    obscureText:
+                                        !authController.isPasswordVisible.value,
+                                    validator:
+                                        authController.validatePassword,
+                                    suffixIcon: IconButton(
+                                      tooltip:
+                                          authController.isPasswordVisible.value
+                                              ? 'Hide password'
+                                              : 'Show password',
+                                      icon: Icon(
+                                        authController.isPasswordVisible.value
+                                            ? Icons.visibility_rounded
+                                            : Icons.visibility_off_rounded,
+                                      ),
+                                      onPressed:
+                                          authController
+                                              .togglePasswordVisibility,
                                     ),
                                   ),
-                                )
-                                : Text(
-                                  'Sign In',
-                                  style: AppTextStyling.body_14M.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
                                 ),
-                      ),
-                    ),
-                  ),
-                  AppSize.xxxlHeight,
-                  Center(
-                    child: RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "Don't have an account? ",
-                            style: AppTextStyling.body_12S.copyWith(
-                              color: AppColors.grey,
+                                SizedBox(height: AppSize.sH),
+                                _LoginOptions(controller: authController),
+                                SizedBox(height: AppSize.lH),
+                                _SignInButton(controller: authController),
+                              ],
                             ),
                           ),
-                          TextSpan(
-                            text: 'Sign Up',
-                            style: AppTextStyling.body_12S.copyWith(
-                              color: AppColors.safetyBlue,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            recognizer:
-                                TapGestureRecognizer()
-                                  ..onTap = () => Get.toNamed('/signup'),
-                          ),
+                          SizedBox(height: AppSize.mH),
+                          _SignUpPrompt(scheme: scheme),
+                          SizedBox(height: availableHeight * 0.035),
                         ],
                       ),
                     ),
                   ),
-                  AppSize.xxxlHeight,
-                ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _LoginHeader extends StatelessWidget {
+  final ColorScheme scheme;
+  final double logoSize;
+
+  const _LoginHeader({required this.scheme, required this.logoSize});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: logoSize,
+          height: logoSize,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: scheme.primary.withValues(alpha: 0.12),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.primary.withValues(alpha: 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: Image.asset(
+              'assets/logo.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        SizedBox(height: AppSize.lH),
+        Text(
+          'Welcome Back',
+          textAlign: TextAlign.center,
+          style: AppTextStyling.title_30M.copyWith(
+            color: scheme.primary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        SizedBox(height: AppSize.xsH),
+        Text(
+          'Sign in to continue helping your community.',
+          textAlign: TextAlign.center,
+          style: AppTextStyling.body_14M.copyWith(
+            color: scheme.onSurfaceVariant,
+            height: 1.35,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LoginCard extends StatelessWidget {
+  final Widget child;
+
+  const _LoginCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: EdgeInsets.all(AppSize.m),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+class _AuthTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final IconData icon;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
+  final Widget? suffixIcon;
+
+  const _AuthTextField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.icon,
+    this.obscureText = false,
+    this.keyboardType,
+    this.validator,
+    this.suffixIcon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyling.body_12S.copyWith(
+            color: scheme.onSurface,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        SizedBox(height: AppSize.xsH),
+        TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          validator: validator,
+          keyboardType: keyboardType,
+          style: AppTextStyling.body_14M.copyWith(
+            color: scheme.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: AppTextStyling.body_14M.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+            filled: true,
+            fillColor: theme.brightness == Brightness.dark
+                ? theme.inputDecorationTheme.fillColor
+                : const Color(0xFFF8FAFC),
+            prefixIcon: Icon(icon, color: scheme.primary, size: 21),
+            suffixIcon: suffixIcon == null
+                ? null
+                : IconTheme(
+                    data: IconThemeData(color: scheme.onSurfaceVariant),
+                    child: suffixIcon!,
+                  ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: AppSize.m,
+              vertical: 15,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: theme.dividerColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: theme.dividerColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: scheme.primary, width: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LoginOptions extends StatelessWidget {
+  final AuthController controller;
+
+  const _LoginOptions({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Obx(
+            () => InkWell(
+              onTap: () => controller.toggleRememberMe(
+                !controller.isRememberMe.value,
+              ),
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: Checkbox(
+                        value: controller.isRememberMe.value,
+                        onChanged: (value) =>
+                            controller.toggleRememberMe(value ?? false),
+                        activeColor: scheme.primary,
+                        checkColor: scheme.onPrimary,
+                        side: BorderSide(color: scheme.outline, width: 1.4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: AppSize.xs),
+                    Flexible(
+                      child: Text(
+                        'Remember me',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyling.body_12S.copyWith(
+                          color: scheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
+        ),
+        TextButton(
+          onPressed: () {
+            ToastHelper.showInfo('Password reset feature coming soon');
+          },
+          style: TextButton.styleFrom(
+            foregroundColor: scheme.primary,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          child: Text(
+            'Forgot Password?',
+            style: AppTextStyling.body_12S.copyWith(
+              color: scheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SignInButton extends StatelessWidget {
+  final AuthController controller;
+
+  const _SignInButton({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        height: AppSize.buttonHeight,
+        child: ElevatedButton(
+          onPressed: controller.isLoading.value ? null : controller.onLogin,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.safetyBlue,
+            disabledBackgroundColor:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+          ),
+          child: controller.isLoading.value
+              ? AppShimmer(
+                  child: Container(
+                    height: 18,
+                    width: 88,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                )
+              : Text(
+                  'Sign In',
+                  style: AppTextStyling.body_14M.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SignUpPrompt extends StatelessWidget {
+  final ColorScheme scheme;
+
+  const _SignUpPrompt({required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: "Don't have an account? ",
+              style: AppTextStyling.body_12S.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            TextSpan(
+              text: 'Sign Up',
+              style: AppTextStyling.body_12S.copyWith(
+                color: scheme.primary,
+                fontWeight: FontWeight.w800,
+              ),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () => Get.toNamed('/signup'),
+            ),
+          ],
         ),
       ),
     );

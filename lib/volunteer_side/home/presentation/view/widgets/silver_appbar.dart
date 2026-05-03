@@ -20,66 +20,37 @@ Widget sliverAppBar({
     child: Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(18),
+          bottomRight: Radius.circular(18),
         ),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             AppColors.steelBlue.withValues(alpha: 0.88),
-            AppColors.safetyBlue.withValues(alpha: 0.92),
+            AppColors.safetyBlue.withValues(alpha: 0.86),
           ],
         ),
         boxShadow: [
-          // Primary shadow for depth
           BoxShadow(
-            color: AppColors.safetyBlue.withValues(alpha: 0.25),
-            blurRadius: 20,
-            spreadRadius: 1,
-            offset: Offset(0, 8),
-          ),
-          // Subtle inner shadow for sophistication
-          BoxShadow(
-            color: AppColors.steelBlue.withValues(alpha: 0.1),
-            blurRadius: 12,
-            spreadRadius: 0,
-            offset: Offset(0, 4),
+            color: AppColors.safetyBlue.withValues(alpha: 0.18),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       padding: EdgeInsets.all(AppSize.m),
       child: Column(
         children: [
-          // User Profile Card - Professional with Elevation
           Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  scheme.surface,
-                  scheme.surface.withValues(alpha: isDark ? 0.92 : 0.95),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
+              color: scheme.surface,
+              borderRadius: BorderRadius.circular(16),
               boxShadow: [
-                // Outer shadow for depth
                 BoxShadow(
-                  color: AppColors.safetyBlue.withValues(alpha: 0.15),
-                  blurRadius: 24,
-                  spreadRadius: 2,
-                  offset: Offset(0, 8),
-                ),
-                // Inner highlight for glass effect
-                BoxShadow(
-                  color:
-                      isDark
-                          ? Colors.black.withValues(alpha: 0.12)
-                          : AppColors.pureWhite.withValues(alpha: 0.8),
-                  blurRadius: 8,
-                  spreadRadius: -2,
-                  offset: Offset(0, -2),
+                  color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.08),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
                 ),
               ],
               border: Border.all(
@@ -87,10 +58,9 @@ Widget sliverAppBar({
                 width: 1,
               ),
             ),
-            padding: EdgeInsets.all(AppSize.l),
+            padding: EdgeInsets.all(AppSize.m),
             child: Row(
               children: [
-                // Avatar with magical glow
                 Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -99,15 +69,14 @@ Widget sliverAppBar({
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.steelBlue.withValues(alpha: 0.4),
-                        blurRadius: 16,
-                        spreadRadius: 2,
+                        color: AppColors.steelBlue.withValues(alpha: 0.22),
+                        blurRadius: 10,
                       ),
                     ],
                   ),
                   padding: EdgeInsets.all(3),
                   child: CircleAvatar(
-                    radius: 36,
+                    radius: 32,
                     backgroundColor: AppColors.steelBlue.withValues(alpha: 0.1),
                     child: Icon(
                       Icons.person_2_rounded,
@@ -116,8 +85,7 @@ Widget sliverAppBar({
                     ),
                   ),
                 ),
-                SizedBox(width: AppSize.l),
-                // User Info
+                SizedBox(width: AppSize.m),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,7 +110,7 @@ Widget sliverAppBar({
                           Expanded(
                             child: Text(
                               locationName.trim().isEmpty
-                                  ? 'Finding nearby area...'
+                                  ? 'Resolving nearby area...'
                                   : locationName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -157,42 +125,36 @@ Widget sliverAppBar({
                     ],
                   ),
                 ),
-                // Notification Badge - Elevated with rounded corners
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    gradient: LinearGradient(
-                      colors: [AppColors.emergencyRed, AppColors.amberOrange],
+                Tooltip(
+                  message: 'Alerts',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      gradient: LinearGradient(
+                        colors: [AppColors.emergencyRed, AppColors.amberOrange],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.emergencyRed.withValues(alpha: 0.22),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.emergencyRed.withValues(alpha: 0.4),
-                        blurRadius: 16,
-                        spreadRadius: 2,
-                        offset: Offset(0, 6),
-                      ),
-                      BoxShadow(
-                        color: AppColors.emergencyRed.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        spreadRadius: -1,
-                        offset: Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  padding: EdgeInsets.all(10),
-                  child: Icon(
-                    Icons.notifications_rounded,
-                    color: AppColors.pureWhite,
-                    size: 20,
+                    padding: EdgeInsets.all(10),
+                    child: Icon(
+                      Icons.notifications_rounded,
+                      color: AppColors.pureWhite,
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: AppSize.mH),
+          SizedBox(height: AppSize.sH),
           const HelpToggle(),
-          SizedBox(height: AppSize.lH),
-          // Stats Row
+          SizedBox(height: AppSize.mH),
           Row(
             children: [
               Expanded(

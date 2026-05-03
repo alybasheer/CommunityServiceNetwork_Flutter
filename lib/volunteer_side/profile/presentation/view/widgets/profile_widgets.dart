@@ -14,13 +14,13 @@ class ProfileHero extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(
       () => Container(
-        padding: EdgeInsets.all(AppSize.l),
+        padding: EdgeInsets.all(AppSize.m),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppColors.safetyBlue, AppColors.steelBlue],
+            colors: const [Color(0xFF0F5DB8), Color(0xFF1976D2)],
           ),
           boxShadow: [
             BoxShadow(
@@ -36,7 +36,7 @@ class ProfileHero extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  radius: 34,
+                  radius: 32,
                   backgroundColor: AppColors.pureWhite.withValues(alpha: 0.18),
                   child: Text(
                     controller.initials,
@@ -72,9 +72,12 @@ class ProfileHero extends StatelessWidget {
                     ],
                   ),
                 ),
-                _RolePill(
-                  label: controller.displayRole,
-                  icon: controller.roleIcon,
+                Flexible(
+                  flex: 0,
+                  child: _RolePill(
+                    label: controller.displayRole,
+                    icon: controller.roleIcon,
+                  ),
                 ),
               ],
             ),
@@ -123,7 +126,7 @@ class ProfileAccountSection extends StatelessWidget {
             icon: Icons.person_rounded,
             textInputAction: TextInputAction.next,
           ),
-          SizedBox(height: AppSize.sH),
+          SizedBox(height: AppSize.mH),
           _ProfileTextField(
             controller: controller.emailController,
             label: 'Email',
@@ -131,14 +134,14 @@ class ProfileAccountSection extends StatelessWidget {
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
           ),
-          SizedBox(height: AppSize.sH),
+          SizedBox(height: AppSize.mH),
           _ProfileTextField(
             controller: controller.locationController,
             label: 'Location',
             icon: Icons.location_on_rounded,
             textInputAction: TextInputAction.done,
           ),
-          SizedBox(height: AppSize.sH),
+          SizedBox(height: AppSize.mH),
           Row(
             children: [
               Expanded(
@@ -160,6 +163,19 @@ class ProfileAccountSection extends StatelessWidget {
                       controller.isResolvingLocation.value
                           ? 'Finding'
                           : 'Use Current',
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 46),
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      side: BorderSide(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.45),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
@@ -185,8 +201,13 @@ class ProfileAccountSection extends StatelessWidget {
                             : const Icon(Icons.save_rounded),
                     label: Text(controller.isSaving.value ? 'Saving' : 'Save'),
                     style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(0, 46),
                       backgroundColor: AppColors.safetyBlue,
                       foregroundColor: AppColors.pureWhite,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
@@ -321,40 +342,111 @@ class ProfilePolicySection extends StatelessWidget {
   void _showPrivacySheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) {
-        return Padding(
-          padding: EdgeInsets.all(AppSize.l),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Data and permissions',
-                style: AppTextStyling.title_18M.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.w800,
+        final scheme = Theme.of(context).colorScheme;
+
+        return SafeArea(
+          top: false,
+          child: DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.44,
+            minChildSize: 0.34,
+            maxChildSize: 0.72,
+            builder: (context, scrollController) {
+              return SingleChildScrollView(
+                controller: scrollController,
+                padding: EdgeInsets.fromLTRB(
+                  AppSize.l,
+                  AppSize.sH,
+                  AppSize.l,
+                  AppSize.lH,
                 ),
-              ),
-              SizedBox(height: AppSize.mH),
-              _PolicyLine(
-                icon: Icons.key_rounded,
-                text: 'Your login token is stored locally for session access.',
-              ),
-              _PolicyLine(
-                icon: Icons.location_on_rounded,
-                text:
-                    'Location is requested only when nearby services need it.',
-              ),
-              _PolicyLine(
-                icon: Icons.palette_rounded,
-                text: 'Theme and onboarding preferences stay on this device.',
-              ),
-              SizedBox(height: AppSize.mH),
-            ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).dividerColor,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: AppSize.lH),
+                    Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: scheme.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.privacy_tip_rounded,
+                            color: scheme.primary,
+                            size: 21,
+                          ),
+                        ),
+                        SizedBox(width: AppSize.s),
+                        Expanded(
+                          child: Text(
+                            'Data and permissions',
+                            style: AppTextStyling.title_18M.copyWith(
+                              color: scheme.onSurface,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: AppSize.mH),
+                    _PolicyLine(
+                      icon: Icons.key_rounded,
+                      title: 'Session access',
+                      text:
+                          'Your login token is stored locally on this device so you stay signed in.',
+                    ),
+                    _PolicyLine(
+                      icon: Icons.location_on_rounded,
+                      title: 'Location use',
+                      text:
+                          'Location is requested only for nearby requests, volunteers, maps, alerts, and help coordination.',
+                    ),
+                    _PolicyLine(
+                      icon: Icons.palette_rounded,
+                      title: 'Preferences',
+                      text:
+                          'Theme and onboarding preferences stay on this device and are used only to personalize the app.',
+                    ),
+                    SizedBox(height: AppSize.sH),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: scheme.primary,
+                          foregroundColor: scheme.onPrimary,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('Got it'),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         );
       },
@@ -404,7 +496,7 @@ class _ProfileSection extends StatelessWidget {
       padding: EdgeInsets.all(AppSize.m),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: [
           BoxShadow(
@@ -419,7 +511,11 @@ class _ProfileSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.safetyBlue, size: 20),
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              ),
               SizedBox(width: AppSize.xs),
               Text(
                 title,
@@ -455,7 +551,7 @@ class _HeroInfo extends StatelessWidget {
       padding: EdgeInsets.all(AppSize.s),
       decoration: BoxDecoration(
         color: AppColors.pureWhite.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.pureWhite.withValues(alpha: 0.18)),
       ),
       child: Row(
@@ -499,26 +595,35 @@ class _RolePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppSize.s, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.pureWhite.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.pureWhite.withValues(alpha: 0.22)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppColors.pureWhite, size: 16),
-          SizedBox(width: 6),
-          Text(
-            label,
-            style: AppTextStyling.body_12S.copyWith(
-              color: AppColors.pureWhite,
-              fontWeight: FontWeight.w700,
-            ),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 112),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: AppSize.s, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.pureWhite.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: AppColors.pureWhite.withValues(alpha: 0.22),
           ),
-        ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: AppColors.pureWhite, size: 15),
+            SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyling.body_12S.copyWith(
+                  color: AppColors.pureWhite,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -541,28 +646,54 @@ class _ProfileTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: AppColors.steelBlue),
-        filled: true,
-        fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).dividerColor),
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyling.body_12S.copyWith(
+            color: scheme.onSurfaceVariant,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).dividerColor),
+        SizedBox(height: AppSize.xsH),
+        SizedBox(
+          height: 48,
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            style: AppTextStyling.body_14M.copyWith(
+              color: scheme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+            decoration: InputDecoration(
+              prefixIcon: Icon(icon, color: scheme.primary, size: 20),
+              filled: true,
+              fillColor: theme.inputDecorationTheme.fillColor,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: theme.dividerColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: theme.dividerColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: scheme.primary, width: 1.4),
+              ),
+            ),
+          ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.safetyBlue, width: 1.4),
-        ),
-      ),
+      ],
     );
   }
 }
@@ -577,14 +708,15 @@ class _ActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
+      height: 72,
       child: Material(
         color: action.color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: action.onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: EdgeInsets.all(AppSize.s),
+            padding: EdgeInsets.symmetric(horizontal: AppSize.s, vertical: 10),
             child: Row(
               children: [
                 CircleAvatar(
@@ -596,11 +728,12 @@ class _ActionTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     action.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                    overflow: TextOverflow.fade,
                     style: AppTextStyling.body_12S.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w700,
+                      height: 1.15,
                     ),
                   ),
                 ),
@@ -615,26 +748,55 @@ class _ActionTile extends StatelessWidget {
 
 class _PolicyLine extends StatelessWidget {
   final IconData icon;
+  final String title;
   final String text;
 
-  const _PolicyLine({required this.icon, required this.text});
+  const _PolicyLine({
+    required this.icon,
+    required this.title,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Padding(
-      padding: EdgeInsets.only(bottom: AppSize.sH),
+      padding: EdgeInsets.only(bottom: AppSize.mH),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppColors.safetyBlue, size: 20),
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: scheme.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: scheme.primary, size: 18),
+          ),
           SizedBox(width: AppSize.s),
           Expanded(
-            child: Text(
-              text,
-              style: AppTextStyling.body_14M.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                height: 1.35,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyling.body_14M.copyWith(
+                    color: scheme.onSurface,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 3),
+                Text(
+                  text,
+                  softWrap: true,
+                  style: AppTextStyling.body_12S.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    height: 1.35,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

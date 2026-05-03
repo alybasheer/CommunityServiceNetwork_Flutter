@@ -63,6 +63,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   static Widget bottomSpacing() {
-    return SliverToBoxAdapter(child: SizedBox(height: AppSize.lH));
+    return SliverToBoxAdapter(child: SizedBox(height: AppSize.hp(12)));
   }
 }

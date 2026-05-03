@@ -42,7 +42,9 @@ class HomeController extends GetxController {
         latitude: position.latitude,
         longitude: position.longitude,
       );
-      requests.assignAll(list);
+      final visibleRequests = list.where(_isNotOwnRequest).toList();
+      requests.assignAll(visibleRequests);
+      unawaited(_resolveRequestLocations(visibleRequests));
     } catch (e) {
       ToastHelper.showErrorMessage(e);
       requests.clear();
@@ -58,6 +60,11 @@ class HomeController extends GetxController {
       return;
     }
     if (acceptingRequestIds.contains(id)) {
+      return;
+    }
+    if (!_isNotOwnRequest(request)) {
+      ToastHelper.showWarning('You cannot accept your own request.');
+      await fetchRequests();
       return;
     }
 
@@ -178,6 +185,15 @@ class HomeController extends GetxController {
     return null;
   }
 
+  bool _isNotOwnRequest(HelpRequest request) {
+    final currentUserId = _storage.readData('userId')?.toString().trim() ?? '';
+    final requestUserId = request.userId?.trim() ?? '';
+    if (currentUserId.isEmpty || requestUserId.isEmpty) {
+      return true;
+    }
+    return currentUserId != requestUserId;
+  }
+
   int? _readInt(dynamic value) {
     if (value is int) {
       return value;
@@ -218,9 +234,12 @@ class HomeController extends GetxController {
     if (storedLocation is String && storedLocation.trim().isNotEmpty) {
       final location = storedLocation.trim();
       locationName.value =
-          _looksLikeCoordinates(location) ? 'Finding nearby area...' : location;
+          isGenericLocationLabel(location) ? 'Resolving nearby area...' : location;
+      if (isGenericLocationLabel(location)) {
+        unawaited(_resolveStoredLocation(location));
+      }
     } else {
-      locationName.value = 'Finding nearby area...';
+      locationName.value = 'Resolving nearby area...';
     }
   }
 
@@ -236,22 +255,54 @@ class HomeController extends GetxController {
       latitude: latitude,
       longitude: longitude,
     );
-    if (resolvedName.trim().isEmpty) {
+    if (resolvedName.trim().isEmpty || resolvedName == 'Location unavailable') {
       return;
     }
     locationName.value = resolvedName;
     _storage.saveData('profile_location', resolvedName);
   }
 
-  bool _looksLikeCoordinates(String value) {
-    final normalized = value.trim().toLowerCase();
-    if (normalized.contains('lat') || normalized.contains('lng')) {
-      return true;
+  Future<void> _resolveStoredLocation(String value) async {
+    final resolvedName = await resolveLocationLabel(value);
+    if (resolvedName == 'Location unavailable' || resolvedName.trim().isEmpty) {
+      return;
+    }
+    locationName.value = resolvedName;
+    _storage.saveData('profile_location', resolvedName);
+    _storage.saveData('locationName', resolvedName);
+  }
+
+  Future<void> _resolveRequestLocations(List<HelpRequest> list) async {
+    var changed = false;
+
+    for (final request in list) {
+      if (request.locationName != null &&
+          request.locationName!.trim().isNotEmpty &&
+          !isGenericLocationLabel(request.locationName!)) {
+        continue;
+      }
+
+      final lat = request.location?.latitude;
+      final lng = request.location?.longitude;
+      if (lat == null || lng == null) {
+        continue;
+      }
+
+      final resolvedName = await getLocationNameFromCoordinates(
+        latitude: lat,
+        longitude: lng,
+      );
+      if (resolvedName.trim().isEmpty ||
+          resolvedName == 'Location unavailable') {
+        continue;
+      }
+
+      request.locationName = resolvedName;
+      changed = true;
     }
 
-    final parts = normalized.split(RegExp(r'\s*,\s*'));
-    return parts.length == 2 &&
-        double.tryParse(parts[0]) != null &&
-        double.tryParse(parts[1]) != null;
+    if (changed) {
+      requests.refresh();
+    }
   }
 }

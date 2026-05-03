@@ -33,7 +33,7 @@ class SocketService {
 
       print('🔌 Connecting to WebSocket...');
 
-      final socketUrl = ApiNames.baseUrl.replaceFirst('/api/', '');
+      final socketUrl = ApiNames.socketBaseUrl;
 
       _socket = IO.io(
         socketUrl,
