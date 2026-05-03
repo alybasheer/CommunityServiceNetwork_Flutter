@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 import 'package:get/get.dart';

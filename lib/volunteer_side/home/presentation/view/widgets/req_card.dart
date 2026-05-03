@@ -3,11 +3,13 @@ import 'package:get/get.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/request_media_gallery.dart';
 import 'package:fyp_source_code/volunteer_side/home/presentation/view/widgets/request_details_dialog.dart';
 
 Widget requestCard(
   int index, {
-  required ImageProvider requestImage,
+  required ImageProvider? requestImage,
+  required List<String> mediaUrls,
   required String title,
   required String description,
   required String location,
@@ -37,6 +39,7 @@ Widget requestCard(
           Get.dialog(
             RequestDetailsDialog(
               image: requestImage,
+              mediaUrls: mediaUrls,
               title: title,
               description: description,
               location: location,
@@ -65,11 +68,15 @@ Widget requestCard(
                     child: CircleAvatar(
                       radius: 28,
                       backgroundColor: AppColors.steelBlue.withOpacity(0.1),
-                      child: Icon(
-                        Icons.person_2_rounded,
-                        color: AppColors.steelBlue,
-                        size: 32,
-                      ),
+                      backgroundImage: requestImage,
+                      child:
+                          requestImage == null
+                              ? Icon(
+                                Icons.person_2_rounded,
+                                color: AppColors.steelBlue,
+                                size: 32,
+                              )
+                              : null,
                     ),
                   ),
                   SizedBox(width: AppSize.m),
@@ -79,6 +86,8 @@ Widget requestCard(
                       children: [
                         Text(
                           title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: AppTextStyling.title_16M.copyWith(
                             color: scheme.onSurface,
                             fontWeight: FontWeight.w600,
@@ -123,6 +132,10 @@ Widget requestCard(
                 ),
               ),
               SizedBox(height: AppSize.mH),
+              if (mediaUrls.isNotEmpty) ...[
+                RequestMediaStrip(mediaUrls: mediaUrls, height: 86),
+                SizedBox(height: AppSize.mH),
+              ],
               Row(
                 children: [
                   Icon(
@@ -134,6 +147,8 @@ Widget requestCard(
                   Expanded(
                     child: Text(
                       location,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyling.body_12S.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),

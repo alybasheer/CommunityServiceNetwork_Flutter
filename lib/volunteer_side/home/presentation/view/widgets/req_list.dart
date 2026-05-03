@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
+import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:fyp_source_code/volunteer_side/home/presentation/view/widgets/req_card.dart';
 import 'package:fyp_source_code/request_side/create_help_request/data/model/help_request.dart';
 
@@ -15,7 +16,7 @@ Widget requestsListSection(
   return SliverList(
     delegate: SliverChildBuilderDelegate((context, index) {
       final request = requests[index];
-      final image = _resolveImage(request.image);
+      final image = _resolveImage(request.displayImage);
 
       return Padding(
         padding: EdgeInsets.symmetric(
@@ -25,6 +26,7 @@ Widget requestsListSection(
         child: requestCard(
           index,
           requestImage: image,
+          mediaUrls: request.displayMediaUrls,
           title: request.displayTitle,
           description: request.description ?? 'No description provided.',
           location: request.displayLocation,
@@ -36,12 +38,24 @@ Widget requestsListSection(
   );
 }
 
-ImageProvider _resolveImage(String? imageUrl) {
+ImageProvider? _resolveImage(String? imageUrl) {
   if (imageUrl == null || imageUrl.isEmpty) {
-    return const AssetImage('assets/logo.png');
+    return null;
   }
   if (imageUrl.startsWith('http')) {
-    return NetworkImage(imageUrl);
+    return NetworkImage(imageUrl, headers: _authHeaders());
   }
-  return AssetImage(imageUrl);
+  if (imageUrl.startsWith('assets/')) {
+    return AssetImage(imageUrl);
+  }
+
+  return null;
+}
+
+Map<String, String>? _authHeaders() {
+  final token = StorageHelper().readData('token')?.toString().trim();
+  if (token == null || token.isEmpty) {
+    return null;
+  }
+  return {'Authorization': 'Bearer $token'};
 }

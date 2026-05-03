@@ -2,12 +2,12 @@ class ApiNames {
   // Keep a single production backend source to avoid accidental environment drift.
   static const productionBaseUrl = 'https://backendforwehelp.onrender.com/';
   static const baseUrl = productionBaseUrl;
-  static String get normalizedBaseUrl => baseUrl.endsWith('/')
-      ? baseUrl
-      : '$baseUrl/';
-  static String get socketBaseUrl => normalizedBaseUrl.endsWith('/')
-      ? normalizedBaseUrl.substring(0, normalizedBaseUrl.length - 1)
-      : normalizedBaseUrl;
+  static String get normalizedBaseUrl =>
+      baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
+  static String get socketBaseUrl =>
+      normalizedBaseUrl.endsWith('/')
+          ? normalizedBaseUrl.substring(0, normalizedBaseUrl.length - 1)
+          : normalizedBaseUrl;
   static const signup = 'authentication/signup';
   static const login = 'authentication/login';
   static const voulnteerVerification = 'volunteer/apply';
@@ -26,6 +26,7 @@ class ApiNames {
   static String markChatAsRead(String senderId) => 'chat/mark-read/$senderId';
   static const coordinationContacts = 'chat/coordination/contacts';
   static const helpRequests = 'help-requests';
+  static const helpRequestMedia = 'help-requests/media';
   static const helpRequestsSos = 'help-requests/sos';
   static const activeHelpRequests = 'help-requests/my/active';
   static String acceptHelpRequest(String id) => 'help-requests/$id/accept';

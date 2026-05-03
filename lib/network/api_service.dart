@@ -86,11 +86,12 @@ class DioHelper {
     required String url,
     Object? reqBody,
     bool isauthorize = false,
+    bool isFormData = false,
   }) async {
     try {
       Response response = await dio.post(
         url,
-        options: getOptions(isauthorize: isauthorize),
+        options: getOptions(isFormData: isFormData, isauthorize: isauthorize),
         data: reqBody,
       );
 

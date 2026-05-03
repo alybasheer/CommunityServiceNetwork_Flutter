@@ -18,7 +18,7 @@ class SplashController extends GetxController {
 
   Future<void> _checkUserStatusAndNavigate() async {
     try {
-      await Future.delayed(const Duration(milliseconds: 2300));
+      await Future.delayed(const Duration(milliseconds: 2600));
 
       if (!_hasSeenOnboarding()) {
         Get.offAllNamed(RouteNames.onboarding);

@@ -4,7 +4,6 @@ import 'package:fyp_source_code/auth/presentation/controller/auth_contrl.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
-import 'package:fyp_source_code/utilities/reuse_widgets/app_bar.dart';
 import 'package:fyp_source_code/utilities/reuse_widgets/shimmer_loading.dart';
 import 'package:get/get.dart';
 
@@ -14,403 +13,620 @@ class RegisterScreenProfessional extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authController = Get.put(AuthController());
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const WeHelpAppBar(
-        title: 'Create Account',
-        subtitle: 'Join WeHelp community',
-        showBack: true,
-      ),
+      backgroundColor:
+          theme.brightness == Brightness.dark
+              ? theme.scaffoldBackgroundColor
+              : const Color(0xFFF6F9FD),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSize.l),
-            child: Form(
-              key: authController.registerFormKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppSize.lHeight,
-                  // HEADER
-                  Text(
-                    'Create Your Account',
-                    style: AppTextStyling.title_22L.copyWith(
-                      color: AppColors.black,
-                    ),
-                  ),
-                  AppSize.xsHeight,
-                  Text(
-                    'Sign up to get started',
-                    style: AppTextStyling.body_12S.copyWith(
-                      color: AppColors.grey,
-                      height: 1.5,
-                    ),
-                  ),
-                  AppSize.xxxlHeight,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final logoWatermarkSize = (constraints.maxWidth * 0.92).clamp(
+              260.0,
+              420.0,
+            );
 
-                  // FULL NAME SECTION
-                  Text(
-                    'Full Name',
-                    style: AppTextStyling.body_12S.copyWith(
-                      color: AppColors.darkGray,
-                      fontWeight: FontWeight.w600,
+            return Stack(
+              children: [
+                _LogoWatermark(size: logoWatermarkSize),
+                SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: EdgeInsets.symmetric(horizontal: AppSize.l),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                  ),
-                  AppSize.mHeight,
-                  TextFormField(
-                    controller: authController.usernameController,
-                    validator: (val) => authController.validateName(val),
-                    decoration: InputDecoration(
-                      hintText: "Alee Basheer",
-                      hintStyle: AppTextStyling.body_12S.copyWith(
-                        color: AppColors.lightGrey,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: AppSize.mH,
+                        bottom: AppSize.lH,
                       ),
-                      filled: true,
-                      fillColor: Color(0xFFF5F7FA),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AppColors.lightBorderGray,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: AppColors.lightBorderGray,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: AppColors.safetyBlue,
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppSize.m,
-                        vertical: AppSize.m,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.person_outline,
-                        color: AppColors.steelBlue,
-                      ),
-                    ),
-                  ),
-                  AppSize.lHeight,
-
-                  // EMAIL SECTION
-                  Text(
-                    'Email Address',
-                    style: AppTextStyling.body_12S.copyWith(
-                      color: AppColors.darkGray,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  AppSize.mHeight,
-                  TextFormField(
-                    controller: authController.emailController,
-                    validator: (val) => authController.validateEmail(val),
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      hintText: "ali@email.com",
-                      hintStyle: AppTextStyling.body_12S.copyWith(
-                        color: AppColors.lightGrey,
-                      ),
-                      filled: true,
-                      fillColor: Color(0xFFF5F7FA),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: AppColors.lightBorderGray,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: AppColors.lightBorderGray,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: AppColors.safetyBlue,
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppSize.m,
-                        vertical: AppSize.m,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.email_outlined,
-                        color: AppColors.steelBlue,
-                      ),
-                    ),
-                  ),
-                  AppSize.lHeight,
-
-                  // PASSWORD SECTION
-                  Text(
-                    'Password',
-                    style: AppTextStyling.body_12S.copyWith(
-                      color: AppColors.darkGray,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  AppSize.mHeight,
-                  Obx(
-                    () => TextFormField(
-                      controller: authController.passController,
-                      obscureText: !authController.isPasswordVisible.value,
-                      validator: (val) => authController.validatePassword(val),
-                      decoration: InputDecoration(
-                        hintText: "••••••••",
-                        hintStyle: AppTextStyling.body_12S.copyWith(
-                          color: AppColors.lightGrey,
-                        ),
-                        filled: true,
-                        fillColor: Color(0xFFF5F7FA),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: AppColors.lightBorderGray,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.lightBorderGray,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.safetyBlue,
-                            width: 2,
-                          ),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSize.m,
-                          vertical: AppSize.m,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.lock_outlined,
-                          color: AppColors.steelBlue,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            authController.isPasswordVisible.value
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: AppColors.grey,
-                          ),
-                          onPressed: authController.togglePasswordVisibility,
-                        ),
-                      ),
-                    ),
-                  ),
-                  AppSize.lHeight,
-
-                  // PASSWORD REQUIREMENTS INFO
-                  Container(
-                    padding: EdgeInsets.all(AppSize.m),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFFFF3E0),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: AppColors.amberOrange.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Password Requirements:',
-                          style: AppTextStyling.body_12S.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.darkGray,
-                          ),
-                        ),
-                        AppSize.sHeight,
-                        _buildRequirement('At least 6 characters'),
-                        _buildRequirement(
-                          'At least one uppercase letter (A-Z)',
-                        ),
-                        _buildRequirement(
-                          'At least one lowercase letter (a-z)',
-                        ),
-                        _buildRequirement('At least one number (0-9)'),
-                      ],
-                    ),
-                  ),
-                  AppSize.lHeight,
-
-                  // CONFIRM PASSWORD SECTION
-                  Text(
-                    'Confirm Password',
-                    style: AppTextStyling.body_12S.copyWith(
-                      color: AppColors.darkGray,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  AppSize.mHeight,
-                  Obx(
-                    () => TextFormField(
-                      controller: authController.confirmPassController,
-                      obscureText:
-                          !authController.isConfirmPasswordVisible.value,
-                      validator:
-                          (val) => authController.validateConfirmPassword(val),
-                      decoration: InputDecoration(
-                        hintText: "••••••••",
-                        hintStyle: AppTextStyling.body_12S.copyWith(
-                          color: AppColors.lightGrey,
-                        ),
-                        filled: true,
-                        fillColor: Color(0xFFF5F7FA),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: AppColors.lightBorderGray,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.lightBorderGray,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.safetyBlue,
-                            width: 2,
-                          ),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppSize.m,
-                          vertical: AppSize.m,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.lock_outlined,
-                          color: AppColors.steelBlue,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            authController.isConfirmPasswordVisible.value
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: AppColors.grey,
-                          ),
-                          onPressed:
-                              authController.toggleConfirmPasswordVisibility,
-                        ),
-                      ),
-                    ),
-                  ),
-                  AppSize.xxxlHeight,
-
-                  // SIGNUP BUTTON
-                  Obx(
-                    () => SizedBox(
-                      width: double.infinity,
-                      height: AppSize.buttonHeight,
-                      child: ElevatedButton(
-                        onPressed:
-                            authController.isLoading.value
-                                ? null
-                                : () => authController.onRegisterClick(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.safetyBlue,
-                          disabledBackgroundColor: AppColors.lightGrey,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 0,
-                        ),
-                        child:
-                            authController.isLoading.value
-                                ? AppShimmer(
-                                  child: Container(
-                                    height: 18,
-                                    width:
-                                        120, // using 120 because "Create Account" is wider
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.35,
+                      child: Form(
+                        key: authController.registerFormKey,
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 430),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _TopBar(scheme: scheme),
+                                SizedBox(height: AppSize.lH),
+                                _RegisterHeader(scheme: scheme),
+                                SizedBox(height: AppSize.lH),
+                                _RegisterCard(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      _RegisterTextField(
+                                        controller:
+                                            authController.usernameController,
+                                        label: 'Full Name',
+                                        hint: 'Your full name',
+                                        icon: Icons.person_outline_rounded,
+                                        textInputAction: TextInputAction.next,
+                                        validator: authController.validateName,
                                       ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                )
-                                : Text(
-                                  'Create Account',
-                                  style: AppTextStyling.body_14M.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                                      SizedBox(height: AppSize.mH),
+                                      _RegisterTextField(
+                                        controller:
+                                            authController.emailController,
+                                        label: 'Email Address',
+                                        hint: 'example@email.com',
+                                        icon: Icons.email_outlined,
+                                        keyboardType:
+                                            TextInputType.emailAddress,
+                                        textInputAction: TextInputAction.next,
+                                        validator: authController.validateEmail,
+                                      ),
+                                      SizedBox(height: AppSize.mH),
+                                      Obx(
+                                        () => _RegisterTextField(
+                                          controller:
+                                              authController.passController,
+                                          label: 'Password',
+                                          hint: 'Create a password',
+                                          icon: Icons.lock_outline_rounded,
+                                          obscureText:
+                                              !authController
+                                                  .isPasswordVisible
+                                                  .value,
+                                          textInputAction: TextInputAction.next,
+                                          validator:
+                                              authController.validatePassword,
+                                          suffixIcon: IconButton(
+                                            tooltip:
+                                                authController
+                                                        .isPasswordVisible
+                                                        .value
+                                                    ? 'Hide password'
+                                                    : 'Show password',
+                                            icon: Icon(
+                                              authController
+                                                      .isPasswordVisible
+                                                      .value
+                                                  ? Icons.visibility_rounded
+                                                  : Icons
+                                                      .visibility_off_rounded,
+                                            ),
+                                            onPressed:
+                                                authController
+                                                    .togglePasswordVisibility,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: AppSize.sH),
+                                      _PasswordRequirements(
+                                        controller:
+                                            authController.passController,
+                                      ),
+                                      SizedBox(height: AppSize.mH),
+                                      Obx(
+                                        () => _RegisterTextField(
+                                          controller:
+                                              authController
+                                                  .confirmPassController,
+                                          label: 'Confirm Password',
+                                          hint: 'Repeat your password',
+                                          icon: Icons.lock_reset_rounded,
+                                          obscureText:
+                                              !authController
+                                                  .isConfirmPasswordVisible
+                                                  .value,
+                                          textInputAction: TextInputAction.done,
+                                          validator:
+                                              authController
+                                                  .validateConfirmPassword,
+                                          suffixIcon: IconButton(
+                                            tooltip:
+                                                authController
+                                                        .isConfirmPasswordVisible
+                                                        .value
+                                                    ? 'Hide password'
+                                                    : 'Show password',
+                                            icon: Icon(
+                                              authController
+                                                      .isConfirmPasswordVisible
+                                                      .value
+                                                  ? Icons.visibility_rounded
+                                                  : Icons
+                                                      .visibility_off_rounded,
+                                            ),
+                                            onPressed:
+                                                authController
+                                                    .toggleConfirmPasswordVisibility,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: AppSize.lH),
+                                      _CreateAccountButton(
+                                        controller: authController,
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                SizedBox(height: AppSize.mH),
+                                _SignInPrompt(scheme: scheme),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  AppSize.xxlHeight,
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
 
-                  // LOGIN LINK
-                  Center(
-                    child: RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: 'Already have an account? ',
-                            style: AppTextStyling.body_12S.copyWith(
-                              color: AppColors.grey,
-                            ),
-                          ),
-                          TextSpan(
-                            text: 'Sign In',
-                            style: AppTextStyling.body_12S.copyWith(
-                              color: AppColors.safetyBlue,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            recognizer:
-                                TapGestureRecognizer()
-                                  ..onTap = () => Get.back(),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  AppSize.xxxlHeight,
-                ],
-              ),
-            ),
+class _LogoWatermark extends StatelessWidget {
+  final double size;
+
+  const _LogoWatermark({required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return IgnorePointer(
+      child: Align(
+        alignment: const Alignment(0, -0.78),
+        child: Opacity(
+          opacity: isDark ? 0.04 : 0.075,
+          child: Image.asset(
+            'assets/logo.png',
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildRequirement(String text) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppSize.s),
+class _TopBar extends StatelessWidget {
+  final ColorScheme scheme;
+
+  const _TopBar({required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Material(
+          color: scheme.surface.withValues(alpha: 0.78),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: Get.back,
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: 42,
+              height: 42,
+              child: Icon(Icons.arrow_back_rounded, color: scheme.primary),
+            ),
+          ),
+        ),
+        SizedBox(width: AppSize.s),
+        Expanded(
+          child: Text(
+            'Join CERD Community',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyling.body_12S.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RegisterHeader extends StatelessWidget {
+  final ColorScheme scheme;
+
+  const _RegisterHeader({required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 66,
+          height: 66,
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.92),
+            shape: BoxShape.circle,
+            border: Border.all(color: scheme.primary.withValues(alpha: 0.12)),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.primary.withValues(alpha: 0.10),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: Image.asset('assets/logo.png', fit: BoxFit.cover),
+          ),
+        ),
+        SizedBox(height: AppSize.mH),
+        Text(
+          'Create Account',
+          textAlign: TextAlign.center,
+          style: AppTextStyling.title_30M.copyWith(
+            color: scheme.primary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        SizedBox(height: AppSize.xsH),
+        Text(
+          'Create your CERD account to request help or support people nearby.',
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: AppTextStyling.body_14M.copyWith(
+            color: scheme.onSurfaceVariant,
+            height: 1.35,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RegisterCard extends StatelessWidget {
+  final Widget child;
+
+  const _RegisterCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: EdgeInsets.all(AppSize.m),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface.withValues(alpha: 0.96),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+class _RegisterTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final IconData icon;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final String? Function(String?)? validator;
+  final Widget? suffixIcon;
+
+  const _RegisterTextField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.icon,
+    this.obscureText = false,
+    this.keyboardType,
+    this.textInputAction,
+    this.validator,
+    this.suffixIcon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyling.body_12S.copyWith(
+            color: scheme.onSurface,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        SizedBox(height: AppSize.xsH),
+        TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          validator: validator,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          style: AppTextStyling.body_14M.copyWith(
+            color: scheme.onSurface,
+            fontWeight: FontWeight.w600,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: AppTextStyling.body_14M.copyWith(
+              color: scheme.onSurfaceVariant.withValues(alpha: 0.72),
+            ),
+            filled: true,
+            fillColor:
+                theme.brightness == Brightness.dark
+                    ? theme.inputDecorationTheme.fillColor
+                    : const Color(0xFFF8FAFC),
+            prefixIcon: Icon(icon, color: scheme.primary, size: 21),
+            suffixIcon:
+                suffixIcon == null
+                    ? null
+                    : IconTheme(
+                      data: IconThemeData(color: scheme.onSurfaceVariant),
+                      child: suffixIcon!,
+                    ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: AppSize.m,
+              vertical: 15,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: theme.dividerColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: theme.dividerColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: scheme.primary, width: 1.5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PasswordRequirements extends StatelessWidget {
+  final TextEditingController controller;
+
+  const _PasswordRequirements({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final password = controller.text;
+        final requirements = [
+          _RequirementData(label: '6+ characters', isMet: password.length >= 6),
+          _RequirementData(
+            label: 'Uppercase',
+            isMet: RegExp(r'[A-Z]').hasMatch(password),
+          ),
+          _RequirementData(
+            label: 'Lowercase',
+            isMet: RegExp(r'[a-z]').hasMatch(password),
+          ),
+          _RequirementData(
+            label: 'Number',
+            isMet: RegExp(r'[0-9]').hasMatch(password),
+          ),
+        ];
+
+        return Container(
+          padding: EdgeInsets.all(AppSize.s),
+          decoration: BoxDecoration(
+            color:
+                theme.brightness == Brightness.dark
+                    ? scheme.surfaceContainerHighest.withValues(alpha: 0.35)
+                    : scheme.primary.withValues(alpha: 0.055),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: scheme.primary.withValues(alpha: 0.12)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.shield_outlined, size: 17, color: scheme.primary),
+                  SizedBox(width: AppSize.xs),
+                  Text(
+                    'Password must include',
+                    style: AppTextStyling.body_12S.copyWith(
+                      color: scheme.onSurface,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: AppSize.xsH),
+              Wrap(
+                spacing: AppSize.xs,
+                runSpacing: AppSize.xsH,
+                children:
+                    requirements
+                        .map((item) => _RequirementChip(item: item))
+                        .toList(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _RequirementChip extends StatelessWidget {
+  final _RequirementData item;
+
+  const _RequirementChip({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final color = item.isMet ? AppColors.reliefGreen : scheme.onSurfaceVariant;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+      decoration: BoxDecoration(
+        color:
+            item.isMet
+                ? AppColors.reliefGreen.withValues(alpha: 0.10)
+                : scheme.surface.withValues(alpha: 0.70),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.check_circle_outline,
-            color: AppColors.reliefGreen,
-            size: 16,
+            item.isMet ? Icons.check_circle_rounded : Icons.circle_outlined,
+            size: 15,
+            color: color,
           ),
-          AppSize.sWidth,
-          Expanded(
-            child: Text(
-              text,
-              style: AppTextStyling.body_12S.copyWith(
-                color: AppColors.darkGray,
-              ),
+          const SizedBox(width: 5),
+          Text(
+            item.label,
+            style: AppTextStyling.body_12S.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RequirementData {
+  final String label;
+  final bool isMet;
+
+  const _RequirementData({required this.label, required this.isMet});
+}
+
+class _CreateAccountButton extends StatelessWidget {
+  final AuthController controller;
+
+  const _CreateAccountButton({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        height: AppSize.buttonHeight,
+        child: ElevatedButton(
+          onPressed:
+              controller.isLoading.value
+                  ? null
+                  : () => controller.onRegisterClick(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.safetyBlue,
+            disabledBackgroundColor: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.12),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+          ),
+          child:
+              controller.isLoading.value
+                  ? AppShimmer(
+                    child: Container(
+                      height: 18,
+                      width: 118,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  )
+                  : Text(
+                    'Create Account',
+                    style: AppTextStyling.body_14M.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SignInPrompt extends StatelessWidget {
+  final ColorScheme scheme;
+
+  const _SignInPrompt({required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: 'Already have an account? ',
+              style: AppTextStyling.body_12S.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            TextSpan(
+              text: 'Sign In',
+              style: AppTextStyling.body_12S.copyWith(
+                color: scheme.primary,
+                fontWeight: FontWeight.w800,
+              ),
+              recognizer: TapGestureRecognizer()..onTap = () => Get.back(),
+            ),
+          ],
+        ),
       ),
     );
   }

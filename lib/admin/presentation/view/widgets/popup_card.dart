@@ -109,6 +109,11 @@ Widget _infoRow(String title, String value) {
         Expanded(
           child: Text(
             value,
+            maxLines: title == "Location" ? 2 : null,
+            overflow:
+                title == "Location"
+                    ? TextOverflow.ellipsis
+                    : TextOverflow.visible,
             style: TextStyle(color: Colors.grey[800], fontSize: 14),
           ),
         ),

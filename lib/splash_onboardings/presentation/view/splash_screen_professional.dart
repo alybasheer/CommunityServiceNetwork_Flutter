@@ -5,122 +5,92 @@ import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 import 'package:get/get.dart';
 
-class SplashScreenProfessional extends StatelessWidget {
+class SplashScreenProfessional extends StatefulWidget {
   const SplashScreenProfessional({super.key});
 
   @override
+  State<SplashScreenProfessional> createState() =>
+      _SplashScreenProfessionalState();
+}
+
+class _SplashScreenProfessionalState extends State<SplashScreenProfessional>
+    with TickerProviderStateMixin {
+  late final SplashController controller;
+  late final AnimationController introController;
+  late final AnimationController pulseController;
+  late final Animation<double> entrance;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(SplashController());
+    introController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..forward();
+    pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1650),
+    )..repeat();
+    entrance = CurvedAnimation(
+      parent: introController,
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  void dispose() {
+    introController.dispose();
+    pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SplashController());
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppColors.safetyBlue,
+      backgroundColor:
+          isDark ? const Color(0xFF07111F) : const Color(0xFFF7FAFE),
       body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Stack(
           children: [
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0, end: 1),
-                      duration: const Duration(milliseconds: 1100),
-                      curve: Curves.easeOutBack,
-                      builder: (context, value, child) {
-                        return Transform.scale(
-                          scale: 0.72 + (value * 0.28),
-                          child: Opacity(
-                            opacity: value,
-                            child: Container(
-                              height: 132,
-                              width: 132,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.18),
-                                    blurRadius: 24,
-                                    offset: const Offset(0, 12),
-                                  ),
-                                ],
-                              ),
-                              child: ClipOval(
-                                child: Image.asset(
-                                  'assets/logo.png',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    AppSize.xxxlHeight,
-
-                    // APP NAME
-                    Text(
-                      'WeHelp',
-                      style: AppTextStyling.title_30M.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0,
-                      ),
-                    ),
-                    AppSize.mHeight,
-
-                    // TAGLINE
-                    Text(
-                      'Community Helping Community',
-                      style: AppTextStyling.body_14M.copyWith(
-                        color: Colors.white.withOpacity(0.8),
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // LOADING INDICATOR WITH STATUS MESSAGE
+            _BackgroundLogo(isDark: isDark),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: AppSize.l),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // ANIMATED PROGRESS INDICATOR
-                  TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: 1),
-                    duration: Duration(milliseconds: 1500),
-                    builder: (context, value, child) {
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: LinearProgressIndicator(
-                          value: value,
-                          minHeight: 6,
-                          backgroundColor: Colors.white.withOpacity(0.2),
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
+                  const Spacer(flex: 3),
+                  ListenableBuilder(
+                    listenable: Listenable.merge([
+                      introController,
+                      pulseController,
+                    ]),
+                    builder: (context, _) {
+                      final introValue = entrance.value;
+
+                      return Opacity(
+                        opacity: introValue.clamp(0.0, 1.0),
+                        child: Transform.translate(
+                          offset: Offset(0, 18 * (1 - introValue)),
+                          child: Transform.scale(
+                            scale: 0.92 + (introValue * 0.08),
+                            child: _SplashIdentity(
+                              pulse: pulseController.value,
+                              scheme: scheme,
+                              isDark: isDark,
+                            ),
                           ),
                         ),
                       );
                     },
                   ),
-                  AppSize.lHeight,
-
-                  // STATUS MESSAGE
-                  Obx(
-                    () => Text(
-                      _getStatusMessage(controller.userStatus.value),
-                      style: AppTextStyling.body_12S.copyWith(
-                        color: Colors.white.withOpacity(0.7),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  AppSize.xxxlHeight,
+                  const Spacer(flex: 2),
+                  _SplashFooter(controller: controller, scheme: scheme),
+                  SizedBox(height: AppSize.xlH),
                 ],
               ),
             ),
@@ -129,18 +99,250 @@ class SplashScreenProfessional extends StatelessWidget {
       ),
     );
   }
+}
 
-  /// Get status message based on user status
+class _BackgroundLogo extends StatelessWidget {
+  final bool isDark;
+
+  const _BackgroundLogo({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final size = (MediaQuery.sizeOf(context).width * 0.9).clamp(280.0, 430.0);
+
+    return IgnorePointer(
+      child: Align(
+        alignment: const Alignment(0, -0.14),
+        child: Opacity(
+          opacity: isDark ? 0.025 : 0.055,
+          child: Image.asset(
+            'assets/logo.png',
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SplashIdentity extends StatelessWidget {
+  final double pulse;
+  final ColorScheme scheme;
+  final bool isDark;
+
+  const _SplashIdentity({
+    required this.pulse,
+    required this.scheme,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final ringOpacity = (1 - pulse).clamp(0.0, 1.0);
+    final logoSize = (MediaQuery.sizeOf(context).width * 0.28).clamp(
+      108.0,
+      138.0,
+    );
+
+    return Column(
+      children: [
+        SizedBox(
+          width: logoSize + 84,
+          height: logoSize + 84,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              _PulseRing(
+                size: logoSize + 26 + (pulse * 42),
+                color: scheme.primary.withValues(alpha: 0.20 * ringOpacity),
+              ),
+              _PulseRing(
+                size: logoSize + 52 + (pulse * 38),
+                color: AppColors.emergencyRed.withValues(
+                  alpha: 0.10 * ringOpacity,
+                ),
+              ),
+              _LogoDisc(size: logoSize, scheme: scheme, isDark: isDark),
+              Positioned(right: 17, bottom: 28, child: const _SosBadge()),
+            ],
+          ),
+        ),
+        SizedBox(height: AppSize.lH),
+        Text(
+          'CERD Community',
+          textAlign: TextAlign.center,
+          style: AppTextStyling.title_30M.copyWith(
+            color: scheme.primary,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0,
+          ),
+        ),
+        SizedBox(height: AppSize.xsH),
+        Text(
+          'Community support when it matters',
+          textAlign: TextAlign.center,
+          style: AppTextStyling.body_14M.copyWith(
+            color: scheme.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+            height: 1.35,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PulseRing extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const _PulseRing({required this.size, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: 2),
+      ),
+    );
+  }
+}
+
+class _LogoDisc extends StatelessWidget {
+  final double size;
+  final ColorScheme scheme;
+  final bool isDark;
+
+  const _LogoDisc({
+    required this.size,
+    required this.scheme,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: scheme.primary.withValues(alpha: isDark ? 0.18 : 0.10),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.primary.withValues(alpha: isDark ? 0.22 : 0.14),
+            blurRadius: 30,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: ClipOval(child: Image.asset('assets/logo.png', fit: BoxFit.cover)),
+    );
+  }
+}
+
+class _SosBadge extends StatelessWidget {
+  const _SosBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.emergencyRed,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.emergencyRed.withValues(alpha: 0.24),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.notifications_active_rounded,
+            size: 14,
+            color: Colors.white,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'SOS',
+            style: AppTextStyling.body_12S.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SplashFooter extends StatelessWidget {
+  final SplashController controller;
+  final ColorScheme scheme;
+
+  const _SplashFooter({required this.controller, required this.scheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 1900),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: value,
+                minHeight: 5,
+                backgroundColor: scheme.primary.withValues(alpha: 0.10),
+                valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+              ),
+            );
+          },
+        ),
+        SizedBox(height: AppSize.mH),
+        Obx(
+          () => Text(
+            _getStatusMessage(controller.userStatus.value),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyling.body_12S.copyWith(
+              color: scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   String _getStatusMessage(UserStatus status) {
     switch (status) {
       case UserStatus.notAuthenticated:
-        return 'Welcome To CERD...';
+        return 'Preparing CERD Community...';
       case UserStatus.authenticated:
-        return 'Welcome back! Loading your profile...';
+        return 'Loading your profile...';
       case UserStatus.pending:
         return 'Checking your verification status...';
       case UserStatus.verified:
-        return 'All set! Loading home screen...';
+        return 'Opening your volunteer dashboard...';
     }
   }
 }

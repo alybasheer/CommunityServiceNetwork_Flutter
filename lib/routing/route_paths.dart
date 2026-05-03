@@ -7,6 +7,7 @@ import 'package:fyp_source_code/auth/presentation/view/role_selection_screen.dar
 import 'package:fyp_source_code/auth/presentation/view/waiting_screen.dart';
 import 'package:fyp_source_code/chat/presentation/view/chat_screen.dart';
 import 'package:fyp_source_code/communities/presentation/view/communities_screen.dart';
+import 'package:fyp_source_code/routing/auth_middleware.dart';
 import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/splash_onboardings/presentation/view/onboarding_screen_professional.dart';
 import 'package:fyp_source_code/splash_onboardings/presentation/view/splash_screen_professional.dart';
@@ -20,6 +21,14 @@ import 'package:fyp_source_code/request_side/home/presentation/view/request_home
 import 'package:get/get.dart';
 
 class RoutePaths {
+  static final _authGuard = AuthMiddleware();
+  static final _guestGuard = GuestOnlyMiddleware();
+  static final _adminGuard = AuthMiddleware(allowedRoles: {'admin'});
+  static final _volunteerGuard = AuthMiddleware(allowedRoles: {'volunteer'});
+  static final _requestSideGuard = AuthMiddleware(
+    allowedRoles: {'user', 'volunteer'},
+  );
+
   static List<GetPage> routePath = [
     // SPLASH SCREEN - Initial route
     GetPage(name: RouteNames.splash, page: () => SplashScreenProfessional()),
@@ -35,26 +44,42 @@ class RoutePaths {
       name: RouteNames.signup,
       page: () => RegisterScreenProfessional(),
       binding: AuthBindings(),
+      middlewares: [_guestGuard],
     ),
     GetPage(
       name: RouteNames.login,
       page: () => LoginScreen(),
       binding: AuthBindings(),
+      middlewares: [_guestGuard],
     ),
     GetPage(
       name: RouteNames.roleSelection,
       page: () => RoleSelectionScreen(),
       binding: AuthBindings(),
+      middlewares: [_authGuard],
     ),
     GetPage(
       name: RouteNames.adminVerification,
       page: () => VolunteerVerficationScreen(),
+      middlewares: [_authGuard],
     ),
-    GetPage(name: RouteNames.waitingScreen, page: () => WaitingScreen()),
+    GetPage(
+      name: RouteNames.waitingScreen,
+      page: () => WaitingScreen(),
+      middlewares: [_authGuard],
+    ),
 
     // VOLUNTEER SCREENS
-    GetPage(name: RouteNames.home, page: () => HomeScreen()),
-    GetPage(name: RouteNames.coordination, page: () => CoordinationScreen()),
+    GetPage(
+      name: RouteNames.home,
+      page: () => HomeScreen(),
+      middlewares: [_volunteerGuard],
+    ),
+    GetPage(
+      name: RouteNames.coordination,
+      page: () => CoordinationScreen(),
+      middlewares: [_authGuard],
+    ),
     GetPage(
       name: RouteNames.chatDetail,
       page: () {
@@ -64,26 +89,49 @@ class RoutePaths {
           receiverName: args?['userName'] ?? 'Chat',
         );
       },
+      middlewares: [_authGuard],
     ),
-    GetPage(name: RouteNames.map, page: () => MapScreen()),
-    GetPage(name: RouteNames.alerts, page: () => const AlertsScreen()),
+    GetPage(
+      name: RouteNames.map,
+      page: () => MapScreen(),
+      middlewares: [_volunteerGuard],
+    ),
+    GetPage(
+      name: RouteNames.alerts,
+      page: () => const AlertsScreen(),
+      middlewares: [_authGuard],
+    ),
     GetPage(
       name: RouteNames.communities,
       page: () => const CommunitiesScreen(),
+      middlewares: [_authGuard],
     ),
 
     // REQUEST SCREENS
     GetPage(
       name: RouteNames.requestHome,
       page: () => const RequestHomeScreen(),
+      middlewares: [_requestSideGuard],
     ),
 
     // ADMIN SCREENS
-    GetPage(name: RouteNames.adminPanel, page: () => AdminPanelScreen()),
+    GetPage(
+      name: RouteNames.adminPanel,
+      page: () => AdminPanelScreen(),
+      middlewares: [_adminGuard],
+    ),
 
     // MISC SCREENS
-    GetPage(name: RouteNames.startPoint, page: () => StartPoint()),
+    GetPage(
+      name: RouteNames.startPoint,
+      page: () => StartPoint(),
+      middlewares: [_volunteerGuard],
+    ),
     // Profile
-    GetPage(name: RouteNames.profile, page: () => const ProfileScreen()),
+    GetPage(
+      name: RouteNames.profile,
+      page: () => const ProfileScreen(),
+      middlewares: [_authGuard],
+    ),
   ];
 }

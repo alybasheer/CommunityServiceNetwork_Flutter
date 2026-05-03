@@ -60,6 +60,8 @@ class HelpRequest {
   String? subCategory;
   String? description;
   String? image;
+  List<String> mediaUrls = <String>[];
+  String? requesterImage;
   String? locationName;
   HelpRequestLocation? location;
   String? status;
@@ -81,6 +83,8 @@ class HelpRequest {
     this.subCategory,
     this.description,
     this.image,
+    List<String>? mediaUrls,
+    this.requesterImage,
     this.locationName,
     this.location,
     this.status,
@@ -92,7 +96,7 @@ class HelpRequest {
     this.expiresAt,
     this.createdAt,
     this.updatedAt,
-  });
+  }) : mediaUrls = mediaUrls ?? <String>[];
 
   HelpRequest.fromJson(Map<String, dynamic> json) {
     final userRef = json['userId'] ?? json['user'] ?? json['requestee'];
@@ -108,7 +112,23 @@ class HelpRequest {
     category = json['category']?.toString();
     subCategory = json['subCategory']?.toString();
     description = json['description']?.toString();
-    image = json['image']?.toString();
+    final parsedMediaUrls = _readStringList(
+      json['mediaUrls'] ?? json['media'] ?? json['images'],
+    );
+    image = _readFirstString([
+      json['image'],
+      json['imageUrl'],
+      json['mediaUrl'],
+      _readFirstFromList(parsedMediaUrls),
+    ]);
+    mediaUrls = _uniqueStrings([...parsedMediaUrls, if (image != null) image!]);
+    requesterImage = _readFirstString([
+      json['requesterImage'],
+      json['requesterImageUrl'],
+      json['profileImage'],
+      json['profileImageUrl'],
+      _readRefImage(userRef),
+    ]);
     locationName =
         json['locationName']?.toString() ?? json['address']?.toString();
     if (json['location'] is Map) {
@@ -159,6 +179,20 @@ class HelpRequest {
     return 'Resolving nearby area...';
   }
 
+  String? get displayImage {
+    return _readFirstString([
+      _readFirstFromList(displayMediaUrls),
+      requesterImage,
+    ]);
+  }
+
+  List<String> get displayMediaUrls {
+    if (mediaUrls.isNotEmpty) {
+      return mediaUrls;
+    }
+    return _uniqueStrings([if (image != null) image!]);
+  }
+
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
     data['_id'] = sId;
@@ -169,6 +203,8 @@ class HelpRequest {
     data['subCategory'] = subCategory;
     data['description'] = description;
     data['image'] = image;
+    data['mediaUrls'] = mediaUrls;
+    data['requesterImage'] = requesterImage;
     data['locationName'] = locationName;
     if (location != null) {
       data['location'] = location!.toJson();
@@ -255,6 +291,79 @@ String? _readRefName(dynamic value) {
     return value['username']?.toString() ?? value['name']?.toString();
   }
   return null;
+}
+
+String? _readRefImage(dynamic value) {
+  if (value is! Map) {
+    return null;
+  }
+
+  return _readFirstString([
+    value['image'],
+    value['imageUrl'],
+    value['profileImage'],
+    value['profileImageUrl'],
+    value['avatar'],
+    value['avatarUrl'],
+    value['photoUrl'],
+    value['photoURL'],
+  ]);
+}
+
+String? _readFirstString(List<dynamic> values) {
+  for (final value in values) {
+    if (value == null) {
+      continue;
+    }
+    final text = value.toString().trim();
+    if (text.isNotEmpty && text.toLowerCase() != 'null') {
+      return text;
+    }
+  }
+
+  return null;
+}
+
+String? _readFirstFromList(dynamic value) {
+  if (value is List) {
+    for (final item in value) {
+      final text = item?.toString().trim() ?? '';
+      if (text.isNotEmpty && text.toLowerCase() != 'null') {
+        return text;
+      }
+    }
+  }
+
+  return null;
+}
+
+List<String> _readStringList(dynamic value) {
+  if (value is! List) {
+    return <String>[];
+  }
+
+  return _uniqueStrings(
+    value
+        .map((item) => item?.toString().trim() ?? '')
+        .where((item) => item.isNotEmpty && item.toLowerCase() != 'null'),
+  );
+}
+
+List<String> _uniqueStrings(Iterable<String> values) {
+  final result = <String>[];
+  final seen = <String>{};
+
+  for (final value in values) {
+    final text = value.trim();
+    if (text.isEmpty || text.toLowerCase() == 'null') {
+      continue;
+    }
+    if (seen.add(text)) {
+      result.add(text);
+    }
+  }
+
+  return result;
 }
 
 double? _readDouble(dynamic value) {

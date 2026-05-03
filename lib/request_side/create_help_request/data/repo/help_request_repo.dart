@@ -1,6 +1,19 @@
+import 'package:dio/dio.dart';
 import 'package:fyp_source_code/network/api_service.dart';
 import 'package:fyp_source_code/request_side/create_help_request/data/model/help_request.dart';
 import 'package:fyp_source_code/services/api_names.dart';
+
+class RequestMediaUpload {
+  final String filename;
+  final List<int> bytes;
+  final String? mimeType;
+
+  const RequestMediaUpload({
+    required this.filename,
+    required this.bytes,
+    this.mimeType,
+  });
+}
 
 class HelpRequestRepo {
   final DioHelper _dioHelper = DioHelper();
@@ -15,6 +28,37 @@ class HelpRequestRepo {
     return _parseRequest(response);
   }
 
+  Future<List<String>> uploadRequestMedia(
+    List<RequestMediaUpload> files,
+  ) async {
+    if (files.isEmpty) {
+      return <String>[];
+    }
+
+    final formData = FormData.fromMap({
+      'files':
+          files.map((file) {
+            return MultipartFile.fromBytes(
+              file.bytes,
+              filename: file.filename,
+              contentType:
+                  file.mimeType == null
+                      ? null
+                      : DioMediaType.parse(file.mimeType!),
+            );
+          }).toList(),
+    });
+
+    final response = await _dioHelper.post(
+      url: ApiNames.helpRequestMedia,
+      reqBody: formData,
+      isauthorize: true,
+      isFormData: true,
+    );
+
+    return _parseMediaUrls(response);
+  }
+
   Future<HelpRequest> createSos(Object? reqBody) async {
     final response = await _dioHelper.post(
       url: ApiNames.helpRequestsSos,
@@ -23,6 +67,32 @@ class HelpRequestRepo {
     );
 
     return _parseRequest(response);
+  }
+
+  List<String> _parseMediaUrls(dynamic response) {
+    if (response is Map) {
+      final responseMap = Map<String, dynamic>.from(response);
+      final data = responseMap['data'];
+
+      for (final value in [
+        responseMap['mediaUrls'],
+        responseMap['urls'],
+        data is Map ? data['mediaUrls'] : null,
+        data is Map ? data['urls'] : null,
+        data,
+      ]) {
+        final urls = _readStringList(value);
+        if (urls.isNotEmpty) {
+          return urls;
+        }
+      }
+    }
+
+    if (response is List) {
+      return _readStringList(response);
+    }
+
+    return <String>[];
   }
 
   Future<List<HelpRequest>> getOpenRequests({
@@ -180,5 +250,16 @@ class HelpRequestRepo {
     }
 
     return <dynamic>[];
+  }
+
+  List<String> _readStringList(dynamic value) {
+    if (value is! List) {
+      return <String>[];
+    }
+
+    return value
+        .map((item) => item?.toString().trim() ?? '')
+        .where((item) => item.isNotEmpty && item.toLowerCase() != 'null')
+        .toList();
   }
 }

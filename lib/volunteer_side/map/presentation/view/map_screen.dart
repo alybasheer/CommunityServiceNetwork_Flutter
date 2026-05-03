@@ -5,6 +5,7 @@ import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
+import 'package:fyp_source_code/utilities/reuse_widgets/request_media_gallery.dart';
 import 'package:fyp_source_code/utilities/reuse_widgets/app_bar.dart';
 
 import 'package:fyp_source_code/volunteer_side/map/presentation/controller/map_controller.dart';
@@ -72,7 +73,12 @@ class _MapScreenState extends State<MapScreen> {
             getLocation(
               currentLocation: latlng,
               mapController: flutterMapController,
-              bottom: activeRequest == null ? 96 : 228,
+              bottom:
+                  activeRequest == null
+                      ? 96
+                      : activeRequest.displayMediaUrls.isEmpty
+                      ? 228
+                      : 318,
             ),
             if (activeRequest != null)
               _ActiveRequestPanel(
@@ -186,10 +192,7 @@ class _MapControlLayer extends StatelessWidget {
               ),
             ),
             SizedBox(height: AppSize.xsH),
-            _MapStatusChip(
-              text: _statusText,
-              isLive: hasLiveLocation,
-            ),
+            _MapStatusChip(text: _statusText, isLive: hasLiveLocation),
           ],
         ),
       ),
@@ -252,11 +255,7 @@ class _MapFilterChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: 17,
-                color: isSelected ? Colors.white : color,
-              ),
+              Icon(icon, size: 17, color: isSelected ? Colors.white : color),
               SizedBox(width: 6),
               Text(
                 label,
@@ -419,6 +418,13 @@ class _ActiveRequestPanel extends StatelessWidget {
                 ],
               ),
               SizedBox(height: AppSize.sH),
+              if (request.displayMediaUrls.isNotEmpty) ...[
+                RequestMediaStrip(
+                  mediaUrls: request.displayMediaUrls,
+                  height: 78,
+                ),
+                SizedBox(height: AppSize.sH),
+              ],
               Row(
                 children: [
                   Expanded(

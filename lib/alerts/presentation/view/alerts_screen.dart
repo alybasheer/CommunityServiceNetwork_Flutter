@@ -79,6 +79,8 @@ class AlertsScreen extends StatelessWidget {
                         children: [
                           Text(
                             alert.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: AppTextStyling.title_16M.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.w700,
@@ -99,6 +101,8 @@ class AlertsScreen extends StatelessWidget {
                           SizedBox(height: AppSize.sH),
                           Text(
                             alert.locationName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: AppTextStyling.body_12S.copyWith(
                               color: Theme.of(context).colorScheme.onSurface,
                             ),

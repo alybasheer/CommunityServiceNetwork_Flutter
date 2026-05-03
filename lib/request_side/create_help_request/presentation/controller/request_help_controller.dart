@@ -1,11 +1,41 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:fyp_source_code/request_side/create_help_request/presentation/services/request_ai_helper.dart';
 import 'package:fyp_source_code/request_side/create_help_request/data/repo/help_request_repo.dart';
+import 'package:fyp_source_code/request_side/create_help_request/presentation/services/request_ai_helper.dart';
 import 'package:fyp_source_code/services/location_services.dart';
 import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+
+class RequestPhoto {
+  final XFile file;
+  final Uint8List bytes;
+
+  const RequestPhoto({required this.file, required this.bytes});
+
+  String get name {
+    final pathName = file.path.split(RegExp(r'[\\/]')).last.trim();
+    return pathName.isNotEmpty ? pathName : file.name;
+  }
+
+  String? get mimeType => file.mimeType;
+
+  int get sizeInBytes => bytes.length;
+
+  String get sizeLabel {
+    final mb = sizeInBytes / (1024 * 1024);
+    if (mb >= 1) {
+      return '${mb.toStringAsFixed(1)} MB';
+    }
+    return '${(sizeInBytes / 1024).toStringAsFixed(0)} KB';
+  }
+}
 
 class RequestHelpController extends GetxController {
+  static const int maxPhotos = 2;
+  static const int maxPhotoBytes = 5 * 1024 * 1024;
+
   final categories = <String>[
     'Natural Disaster',
     'Medical',
@@ -28,8 +58,10 @@ class RequestHelpController extends GetxController {
   final descriptionController = TextEditingController();
   final locationLabel = 'Resolving nearby area...'.obs;
   final isSubmitting = false.obs;
+  final selectedPhotos = <RequestPhoto>[].obs;
 
   final HelpRequestRepo _repo = HelpRequestRepo();
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void onInit() {
@@ -60,6 +92,46 @@ class RequestHelpController extends GetxController {
     }
   }
 
+  Future<void> pickPhotos() async {
+    final remainingSlots = maxPhotos - selectedPhotos.length;
+    if (remainingSlots <= 0) {
+      ToastHelper.showWarning('You can attach up to 2 photos.');
+      return;
+    }
+
+    try {
+      final picked = await _imagePicker.pickMultiImage(imageQuality: 82);
+      if (picked.isEmpty) {
+        return;
+      }
+
+      var skippedForSize = 0;
+      for (final file in picked.take(remainingSlots)) {
+        final bytes = await file.readAsBytes();
+        if (bytes.length > maxPhotoBytes) {
+          skippedForSize++;
+          continue;
+        }
+        selectedPhotos.add(RequestPhoto(file: file, bytes: bytes));
+      }
+
+      if (picked.length > remainingSlots) {
+        ToastHelper.showInfo('Only 2 photos can be attached.');
+      } else if (skippedForSize > 0) {
+        ToastHelper.showWarning('Some photos were over 5MB and were skipped.');
+      }
+    } catch (e) {
+      ToastHelper.showErrorMessage(e);
+    }
+  }
+
+  void removePhoto(int index) {
+    if (index < 0 || index >= selectedPhotos.length) {
+      return;
+    }
+    selectedPhotos.removeAt(index);
+  }
+
   Future<void> submitRequest() async {
     final description = descriptionController.text.trim();
     if (selectedCategory.value == null || selectedSubcategory.value == null) {
@@ -79,19 +151,23 @@ class RequestHelpController extends GetxController {
         latitude: position.latitude,
         longitude: position.longitude,
       );
+      final mediaUrls = await _uploadSelectedPhotos();
       final reqBody = {
         'category': selectedCategory.value,
         'subCategory': selectedSubcategory.value,
         'description': description,
-        'image': null,
         'latitude': position.latitude,
         'longitude': position.longitude,
-        if (resolvedName != 'Location unavailable') 'locationName': resolvedName,
+        if (mediaUrls.isNotEmpty) 'mediaUrls': mediaUrls,
+        if (mediaUrls.isNotEmpty) 'image': mediaUrls.first,
+        if (resolvedName != 'Location unavailable')
+          'locationName': resolvedName,
       };
 
       await _repo.createRequest(reqBody);
       Get.back();
       ToastHelper.showSuccess('Request sent successfully.');
+      _resetForm();
     } catch (e) {
       ToastHelper.showErrorMessage(e);
     } finally {
@@ -105,6 +181,35 @@ class RequestHelpController extends GetxController {
     super.onClose();
   }
 
+  Future<List<String>> _uploadSelectedPhotos() async {
+    if (selectedPhotos.isEmpty) {
+      return <String>[];
+    }
+
+    final files =
+        selectedPhotos.map((photo) {
+          return RequestMediaUpload(
+            filename: photo.name,
+            bytes: photo.bytes,
+            mimeType: photo.mimeType,
+          );
+        }).toList();
+
+    final urls = await _repo.uploadRequestMedia(files);
+    if (urls.length != selectedPhotos.length) {
+      throw Exception('Could not upload all selected photos.');
+    }
+
+    return urls;
+  }
+
+  void _resetForm() {
+    selectedCategory.value = null;
+    selectedSubcategory.value = null;
+    descriptionController.clear();
+    selectedPhotos.clear();
+  }
+
   Future<void> _resolveCurrentLocationLabel() async {
     try {
       final position = await getCurrentLocation();
@@ -112,7 +217,8 @@ class RequestHelpController extends GetxController {
         latitude: position.latitude,
         longitude: position.longitude,
       );
-      if (resolvedName != 'Location unavailable' && resolvedName.trim().isNotEmpty) {
+      if (resolvedName != 'Location unavailable' &&
+          resolvedName.trim().isNotEmpty) {
         locationLabel.value = resolvedName;
       }
     } catch (_) {

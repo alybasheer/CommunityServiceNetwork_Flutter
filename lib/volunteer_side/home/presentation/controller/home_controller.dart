@@ -97,6 +97,10 @@ class HomeController extends GetxController {
     accepted.subCategory ??= original.subCategory;
     accepted.description ??= original.description;
     accepted.image ??= original.image;
+    if (accepted.mediaUrls.isEmpty) {
+      accepted.mediaUrls = original.mediaUrls;
+    }
+    accepted.requesterImage ??= original.requesterImage;
     accepted.locationName ??= original.locationName;
     accepted.location ??= original.location;
     accepted.status ??= original.status;
@@ -234,7 +238,9 @@ class HomeController extends GetxController {
     if (storedLocation is String && storedLocation.trim().isNotEmpty) {
       final location = storedLocation.trim();
       locationName.value =
-          isGenericLocationLabel(location) ? 'Resolving nearby area...' : location;
+          isGenericLocationLabel(location)
+              ? 'Resolving nearby area...'
+              : location;
       if (isGenericLocationLabel(location)) {
         unawaited(_resolveStoredLocation(location));
       }

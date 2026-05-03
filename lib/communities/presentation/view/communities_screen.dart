@@ -215,6 +215,8 @@ class _CommunityCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   community.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyling.title_16M.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
@@ -241,6 +243,8 @@ class _CommunityCard extends StatelessWidget {
           SizedBox(height: AppSize.sH),
           Text(
             '${community.category} - ${community.locationName}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyling.body_12S.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
             ),

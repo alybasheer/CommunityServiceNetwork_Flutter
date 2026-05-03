@@ -3,20 +3,18 @@ import 'package:fyp_source_code/services/api_names.dart';
 import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 
 Options getOptions({bool isFormData = false, bool isauthorize = false}) {
-  String? token = StorageHelper().readData('token');
-  Map<String, dynamic> getheader() => {"Authorization": "Bearer $token"};
+  final token = StorageHelper().readData('token')?.toString().trim();
+  final hasToken = token != null && token.isNotEmpty;
   return Options(
-
-    contentType: isFormData ? null : 'application/json',
-    headers: {
-      if (isauthorize) ...getheader(),
-      if (isFormData) 'Content-Type': 'multipart/form-data',
-    },
+    contentType:
+        isFormData
+            ? Headers.multipartFormDataContentType
+            : Headers.jsonContentType,
+    headers: {if (isauthorize && hasToken) "Authorization": "Bearer $token"},
     sendTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 30),
     receiveDataWhenStatusError: true,
     validateStatus: (status) => status! < 500,
-
   );
 }
 
@@ -27,27 +25,49 @@ getDio() {
       onRequest: (RequestOptions options, handler) {
         print('Api Url ${options.uri}');
         print('base url is ${options.baseUrl}');
-        print('Header ${options.headers}');
+        final safeHeaders = Map<String, dynamic>.from(options.headers);
+        if (safeHeaders.containsKey('Authorization')) {
+          safeHeaders['Authorization'] = 'Bearer ***';
+        }
+        print('Header $safeHeaders');
         // print('RequestBody ${jsonEncode(options.data)}');
         print("Method -- ${options.method}");
 
-        options.baseUrl = options
-            .copyWith(baseUrl: ApiNames.normalizedBaseUrl)
-            .baseUrl;
+        options.baseUrl =
+            options.copyWith(baseUrl: ApiNames.normalizedBaseUrl).baseUrl;
         return handler.next(options);
       },
       onResponse: (Response response, handler) {
-        print("Response Data ${response.data}");
-        
-        
+        print("Response Data ${_maskSensitiveData(response.data)}");
+
         return handler.next(response);
       },
       onError: (error, handler) {
         print("Status Code ${error.response?.statusCode}");
-        print("Error body ${error.response?.data}");
+        print("Error body ${_maskSensitiveData(error.response?.data)}");
         return handler.next(error);
       },
     ),
   );
   return getDio;
+}
+
+dynamic _maskSensitiveData(dynamic data) {
+  if (data is Map) {
+    return data.map((key, value) {
+      final normalizedKey = key.toString().toLowerCase();
+      final isSensitive =
+          normalizedKey.contains('token') ||
+          normalizedKey.contains('authorization') ||
+          normalizedKey.contains('password');
+
+      return MapEntry(key, isSensitive ? '***' : _maskSensitiveData(value));
+    });
+  }
+
+  if (data is List) {
+    return data.map(_maskSensitiveData).toList();
+  }
+
+  return data;
 }
