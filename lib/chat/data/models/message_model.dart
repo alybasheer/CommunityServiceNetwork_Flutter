@@ -45,7 +45,7 @@ class Message {
     }
 
     return Message(
-      id: json['_id'] ?? json['id'] ?? '',
+      id: toString(json['_id'] ?? json['id']),
       senderId: toString(json['senderId']),
       receiverId: toString(json['receiverId']),
       content: toString(json['content']),

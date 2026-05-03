@@ -3,7 +3,6 @@ import 'package:fyp_source_code/chat/presentation/provider/chat_provider.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
-import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:fyp_source_code/utilities/reuse_widgets/app_bar.dart';
 import 'package:get/get.dart';
 
@@ -25,7 +24,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late final ChatProvider chatProvider;
-  final StorageHelper _storage = StorageHelper();
+  Worker? _messagesWorker;
 
   @override
   void initState() {
@@ -39,13 +38,14 @@ class _ChatScreenState extends State<ChatScreen> {
     chatProvider.openConversation(widget.receiverId);
 
     // Auto-scroll on new messages
-    ever(chatProvider.currentMessages, (_) {
+    _messagesWorker = ever(chatProvider.currentMessages, (_) {
       _scrollToBottom();
     });
   }
 
   @override
   void dispose() {
+    _messagesWorker?.dispose();
     _msgController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -62,7 +62,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  String? _currentUserId() => _storage.readData('userId');
+  String? _currentUserId() => chatProvider.currentUserId;
 
   @override
   Widget build(BuildContext context) {

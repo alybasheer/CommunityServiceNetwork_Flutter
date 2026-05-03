@@ -28,6 +28,10 @@ class ChatProvider extends GetxController {
       _socketService.flowEventStream;
 
   Timer? _typingTimer;
+  String? _sessionUserId;
+
+  String? get currentUserId =>
+      _sessionUserId ?? _storage.readData('userId')?.toString();
 
   @override
   void onInit() {
@@ -40,6 +44,7 @@ class ChatProvider extends GetxController {
     try {
       final token = _storage.readData('token');
       if (token == null) return;
+      _sessionUserId = _storage.readData('userId')?.toString();
 
       _socketService.connect(token);
       _setupSocketListeners();
@@ -69,7 +74,10 @@ class ChatProvider extends GetxController {
   /// Handle received messages
   void _handleReceivedMessage(Message message) {
     try {
-      final currentUserId = _storage.readData('userId');
+      final currentUserId = this.currentUserId;
+      if (currentUserId == null || currentUserId.isEmpty) {
+        return;
+      }
 
       // Check if message belongs to current chat
       final isForCurrentChat =
@@ -79,6 +87,10 @@ class ChatProvider extends GetxController {
               message.receiverId == currentUserId);
 
       if (isForCurrentChat) {
+        if (message.senderId == currentUserId) {
+          _removeMatchingTempMessages(message);
+        }
+
         // Add if not already exists
         if (!currentMessages.any((msg) => msg.id == message.id)) {
           currentMessages.add(message);
@@ -161,23 +173,19 @@ class ChatProvider extends GetxController {
       currentChatUserId.value = userId;
       print('✅ [OPEN_CONV] Set currentChatUserId to: $userId');
 
-      // Try to load from cache first
-      List<Message> messages = _loadMessagesFromCache(userId);
-      print('📦 [OPEN_CONV] Cache returned ${messages.length} messages');
-
-      // If cache is empty, fetch from API
-      if (messages.isEmpty) {
-        print('📡 [OPEN_CONV] Cache empty, fetching from API...');
-        messages = await _chatService.fetchConversationHistory(userId);
-        print('📡 [OPEN_CONV] API returned ${messages.length} messages');
-        // Save to cache
-        if (messages.isNotEmpty) {
-          _saveMessagesToCache(userId, messages);
-          print('💾 [OPEN_CONV] Saved ${messages.length} messages to cache');
-        }
-      } else {
-        print('💾 [OPEN_CONV] Using ${messages.length} cached messages');
+      final cachedMessages = _loadMessagesFromCache(userId);
+      print('📦 [OPEN_CONV] Cache returned ${cachedMessages.length} messages');
+      if (cachedMessages.isNotEmpty) {
+        currentMessages.assignAll(cachedMessages);
       }
+
+      print('📡 [OPEN_CONV] Fetching latest messages from API...');
+      final serverMessages = await _chatService.fetchConversationHistory(
+        userId,
+      );
+      print('📡 [OPEN_CONV] API returned ${serverMessages.length} messages');
+      final messages = _mergeMessages(cachedMessages, serverMessages);
+      _saveMessagesToCache(userId, messages);
 
       // Ensure messages are sorted ASC (oldest -> newest)
       messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
@@ -246,12 +254,18 @@ class ChatProvider extends GetxController {
         return;
       }
 
+      final senderId = currentUserId;
+      if (senderId == null || senderId.isEmpty) {
+        ToastHelper.showError('Chat session expired. Please sign in again.');
+        return;
+      }
+
       print('📤 Sending message: $content');
 
       // Create optimistic message (shows immediately)
       final message = Message(
         id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-        senderId: _storage.readData('userId') ?? 'unknown',
+        senderId: senderId,
         receiverId: receiverId,
         content: content,
         timestamp: DateTime.now(),
@@ -343,7 +357,10 @@ class ChatProvider extends GetxController {
   // ============ MESSAGE CACHING ============
 
   /// Get cache key for messages with a user
-  String _getCacheKey(String userId) => 'chat_messages_$userId';
+  String _getCacheKey(String userId) {
+    final ownerId = currentUserId ?? 'unknown';
+    return 'chat_messages_${ownerId}_$userId';
+  }
 
   /// Save messages to local cache
   void _saveMessagesToCache(String userId, List<Message> messages) {
@@ -383,6 +400,13 @@ class ChatProvider extends GetxController {
   void _appendMessageToCache(String userId, Message message) {
     try {
       List<Message> messages = _loadMessagesFromCache(userId);
+      messages.removeWhere(
+        (msg) =>
+            msg.id.startsWith('temp_') &&
+            msg.senderId == message.senderId &&
+            msg.receiverId == message.receiverId &&
+            msg.content == message.content,
+      );
 
       // Check if message already exists
       if (!messages.any((msg) => msg.id == message.id)) {
@@ -397,6 +421,56 @@ class ChatProvider extends GetxController {
     } catch (e) {
       print('❌ Error appending message to cache: $e');
     }
+  }
+
+  List<Message> _mergeMessages(
+    List<Message> cachedMessages,
+    List<Message> serverMessages,
+  ) {
+    final merged = <Message>[];
+    final seenIds = <String>{};
+
+    for (final message in serverMessages) {
+      if (message.id.isEmpty) {
+        continue;
+      }
+      if (seenIds.add(message.id)) {
+        merged.add(message);
+      }
+    }
+
+    for (final message in cachedMessages) {
+      if (!message.id.startsWith('temp_')) {
+        continue;
+      }
+      final confirmed = merged.any(
+        (serverMessage) =>
+            serverMessage.senderId == message.senderId &&
+            serverMessage.receiverId == message.receiverId &&
+            serverMessage.content == message.content &&
+            serverMessage.timestamp
+                    .difference(message.timestamp)
+                    .inMinutes
+                    .abs() <=
+                5,
+      );
+      if (!confirmed) {
+        merged.add(message);
+      }
+    }
+
+    merged.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    return merged;
+  }
+
+  void _removeMatchingTempMessages(Message confirmedMessage) {
+    currentMessages.removeWhere(
+      (message) =>
+          message.id.startsWith('temp_') &&
+          message.senderId == confirmedMessage.senderId &&
+          message.receiverId == confirmedMessage.receiverId &&
+          message.content == confirmedMessage.content,
+    );
   }
 
   @override
