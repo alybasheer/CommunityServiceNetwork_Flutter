@@ -50,7 +50,12 @@ class RequestHomeScreen extends StatelessWidget {
                 SizedBox(height: AppSize.lH),
                 _SectionTitle(title: 'My Active Requests'),
                 SizedBox(height: AppSize.sH),
-                ...controller.activeRequests.map(_RequestTile.new),
+                ...controller.activeRequests.map(
+                  (request) => _RequestTile(
+                    request: request,
+                    onChat: () => controller.openRequestChat(request),
+                  ),
+                ),
               ],
             ],
           ),
@@ -82,16 +87,14 @@ class _SosEmergencyBar extends StatelessWidget {
         AppSize.m,
         AppSize.sH,
       ),
-      child: Obx(
-        () {
-          final isSending = controller.isSendingSos.value;
+      child: Obx(() {
+        final isSending = controller.isSendingSos.value;
 
-          return _SosPulseButton(
-            isSending: isSending,
-            onPressed: isSending ? null : controller.sendSos,
-          );
-        },
-      ),
+        return _SosPulseButton(
+          isSending: isSending,
+          onPressed: isSending ? null : controller.sendSos,
+        );
+      }),
     );
   }
 }
@@ -100,10 +103,7 @@ class _SosPulseButton extends StatefulWidget {
   final bool isSending;
   final VoidCallback? onPressed;
 
-  const _SosPulseButton({
-    required this.isSending,
-    required this.onPressed,
-  });
+  const _SosPulseButton({required this.isSending, required this.onPressed});
 
   @override
   State<_SosPulseButton> createState() => _SosPulseButtonState();
@@ -186,8 +186,9 @@ class _SosPulseButtonState extends State<_SosPulseButton>
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.zero,
                   backgroundColor: AppColors.emergencyRed,
-                  disabledBackgroundColor:
-                      AppColors.emergencyRed.withValues(alpha: 0.72),
+                  disabledBackgroundColor: AppColors.emergencyRed.withValues(
+                    alpha: 0.72,
+                  ),
                   foregroundColor: Colors.white,
                   disabledForegroundColor: Colors.white,
                   elevation: 0,
@@ -396,17 +397,40 @@ class _VolunteerTile extends StatelessWidget {
 
 class _RequestTile extends StatelessWidget {
   final HelpRequest request;
+  final VoidCallback onChat;
 
-  const _RequestTile(this.request);
+  const _RequestTile({required this.request, required this.onChat});
 
   @override
   Widget build(BuildContext context) {
+    final status = request.status?.toLowerCase().trim() ?? '';
+    final canChat =
+        request.acceptedBy != null &&
+        request.acceptedBy!.trim().isNotEmpty &&
+        (status == 'accepted' || status == 'in_progress');
+
     return _InfoCard(
       icon: request.isSos ? Icons.sos : Icons.support_agent,
       iconColor: request.isSos ? AppColors.emergencyRed : AppColors.steelBlue,
       title: request.displayTitle,
       subtitle: request.displayLocation,
       trailing: request.status ?? 'active',
+      action:
+          canChat
+              ? Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: onChat,
+                  icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
+                  label: Text(
+                    request.acceptedByName == null ||
+                            request.acceptedByName!.trim().isEmpty
+                        ? 'Chat volunteer'
+                        : 'Chat ${request.acceptedByName}',
+                  ),
+                ),
+              )
+              : null,
     );
   }
 }
@@ -417,6 +441,7 @@ class _InfoCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String trailing;
+  final Widget? action;
 
   const _InfoCard({
     required this.icon,
@@ -424,6 +449,7 @@ class _InfoCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.trailing,
+    this.action,
   });
 
   @override
@@ -436,41 +462,48 @@ class _InfoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Theme.of(context).dividerColor),
       ),
-      child: Row(
+      child: Column(
         children: [
-          CircleAvatar(
-            backgroundColor: iconColor.withValues(alpha: 0.12),
-            child: Icon(icon, color: iconColor),
-          ),
-          SizedBox(width: AppSize.m),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTextStyling.title_16M.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontWeight: FontWeight.w700,
-                  ),
+          Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: iconColor.withValues(alpha: 0.12),
+                child: Icon(icon, color: iconColor),
+              ),
+              SizedBox(width: AppSize.m),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyling.title_16M.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: AppSize.xsH),
+                    Text(
+                      subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyling.body_12S.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: AppSize.xsH),
-                Text(
-                  subtitle,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyling.body_12S.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+              ),
+              SizedBox(width: AppSize.s),
+              Text(
+                trailing,
+                style: AppTextStyling.body_12S.copyWith(
+                  color: AppColors.steelBlue,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          SizedBox(width: AppSize.s),
-          Text(
-            trailing,
-            style: AppTextStyling.body_12S.copyWith(color: AppColors.steelBlue),
-          ),
+          if (action != null) ...[SizedBox(height: AppSize.sH), action!],
         ],
       ),
     );

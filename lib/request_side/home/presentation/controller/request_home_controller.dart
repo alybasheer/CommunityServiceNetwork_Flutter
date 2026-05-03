@@ -80,7 +80,8 @@ class RequestHomeController extends GetxController {
         'title': 'SOS Emergency',
         'latitude': position.latitude,
         'longitude': position.longitude,
-        if (locationName != 'Location unavailable') 'locationName': locationName,
+        if (locationName != 'Location unavailable')
+          'locationName': locationName,
       });
       ToastHelper.showSuccess('SOS sent.');
       await refreshDashboard();
@@ -92,7 +93,33 @@ class RequestHomeController extends GetxController {
   }
 
   void openCoordination() {
-    Get.toNamed(RouteNames.coordination);
+    Get.toNamed(RouteNames.coordination, arguments: {'mode': 'requester'});
+  }
+
+  void openRequestChat(HelpRequest request) {
+    final volunteerId = request.acceptedBy?.trim() ?? '';
+    if (volunteerId.isEmpty) {
+      ToastHelper.showWarning('A volunteer has not accepted this request yet.');
+      return;
+    }
+
+    final provider =
+        Get.isRegistered<ChatProvider>()
+            ? Get.find<ChatProvider>()
+            : Get.put(ChatProvider());
+    provider.openConversation(volunteerId);
+
+    final volunteerName = request.acceptedByName?.trim();
+    Get.toNamed(
+      RouteNames.chatDetail,
+      arguments: {
+        'userId': volunteerId,
+        'userName':
+            volunteerName == null || volunteerName.isEmpty
+                ? 'Volunteer'
+                : volunteerName,
+      },
+    );
   }
 
   void openAlerts() {
@@ -146,7 +173,8 @@ class RequestHomeController extends GetxController {
         latitude: lat,
         longitude: lng,
       );
-      if (resolvedName == 'Location unavailable' || resolvedName.trim().isEmpty) {
+      if (resolvedName == 'Location unavailable' ||
+          resolvedName.trim().isEmpty) {
         continue;
       }
 

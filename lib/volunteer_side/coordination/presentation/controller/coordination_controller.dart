@@ -20,9 +20,11 @@ class CoordinationController extends GetxController {
   final selectedTab = 0.obs;
   final searchQuery = ''.obs;
   final userRole = ''.obs;
+  final requestMode = false.obs;
   final searchController = TextEditingController();
 
   bool get isVolunteer => userRole.value == 'volunteer';
+  bool get showVolunteerTabs => isVolunteer && !requestMode.value;
 
   @override
   void onInit() {
@@ -32,8 +34,21 @@ class CoordinationController extends GetxController {
             ? Get.find<ChatProvider>()
             : Get.put(ChatProvider());
     userRole.value = (_storage.readData('role') ?? '').toString().toLowerCase();
+    configureFromArgs(Get.arguments);
     ever(searchQuery, (_) => _filterContacts());
     fetchContacts();
+  }
+
+  void configureFromArgs(dynamic args) {
+    final nextRequestMode =
+        args is Map && args['mode']?.toString().toLowerCase() == 'requester';
+    if (requestMode.value == nextRequestMode) {
+      return;
+    }
+
+    requestMode.value = nextRequestMode;
+    selectedTab.value = 0;
+    _filterContacts();
   }
 
   Future<void> fetchContacts() async {
@@ -59,7 +74,7 @@ class CoordinationController extends GetxController {
   }
 
   List<CoordinationContact> get visibleContacts {
-    if (!isVolunteer) {
+    if (!showVolunteerTabs) {
       return filteredVolunteers;
     }
     return selectedTab.value == 0 ? filteredRequestees : filteredVolunteers;

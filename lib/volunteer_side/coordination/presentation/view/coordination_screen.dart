@@ -14,7 +14,11 @@ class CoordinationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(CoordinationController());
+    final controller =
+        Get.isRegistered<CoordinationController>()
+            ? Get.find<CoordinationController>()
+            : Get.put(CoordinationController());
+    controller.configureFromArgs(Get.arguments);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
@@ -40,7 +44,7 @@ class CoordinationScreen extends StatelessWidget {
               ),
             ),
             Obx(() {
-              if (!controller.isVolunteer) {
+              if (!controller.showVolunteerTabs) {
                 return const SizedBox.shrink();
               }
               return Padding(
@@ -86,7 +90,9 @@ class CoordinationScreen extends StatelessWidget {
                 if (contacts.isEmpty) {
                   return Center(
                     child: Text(
-                      'No coordination contacts yet',
+                      controller.requestMode.value
+                          ? 'No accepted volunteer chat yet'
+                          : 'No coordination contacts yet',
                       style: AppTextStyling.body_14M.copyWith(
                         color: scheme.onSurfaceVariant,
                       ),
@@ -127,6 +133,7 @@ class _ContactTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final firstLetter =
         contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?';
+    final contextLabel = contact.contextLabel;
 
     return InkWell(
       onTap: onTap,
@@ -142,7 +149,9 @@ class _ContactTile extends StatelessWidget {
           children: [
             CircleAvatar(
               backgroundColor:
-                  contact.isVolunteer
+                  contact.isAcceptedVolunteer
+                      ? AppColors.reliefGreen
+                      : contact.isVolunteer
                       ? AppColors.steelBlue
                       : AppColors.reliefGreen,
               child: Text(
@@ -167,6 +176,17 @@ class _ContactTile extends StatelessWidget {
                       contact.email,
                       style: AppTextStyling.body_12S.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  if (contextLabel.isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.only(top: AppSize.xsH),
+                      child: Text(
+                        contextLabel,
+                        style: AppTextStyling.body_12S.copyWith(
+                          color: AppColors.steelBlue,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                 ],
