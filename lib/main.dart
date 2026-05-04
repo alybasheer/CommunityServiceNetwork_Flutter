@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fyp_source_code/routing/route_paths.dart';
 import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_theme.dart';
-import 'package:fyp_source_code/volunteer_side/profile/presentation/controller/profile_controller.dart';
+import 'package:fyp_source_code/view/volunteer_side/profile/presentation/controller/profile_controller.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 

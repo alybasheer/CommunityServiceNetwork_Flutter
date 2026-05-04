@@ -1,22 +1,22 @@
 import 'package:fyp_source_code/admin/presentation/view/admin_panel_screen.dart';
-import 'package:fyp_source_code/alerts/presentation/view/alerts_screen.dart';
-import 'package:fyp_source_code/auth/presentation/bindings/auth_bindings.dart';
-import 'package:fyp_source_code/auth/presentation/view/login_screen_professional.dart';
-import 'package:fyp_source_code/auth/presentation/view/register_screen_professional.dart';
-import 'package:fyp_source_code/auth/presentation/view/role_selection_screen.dart';
-import 'package:fyp_source_code/auth/presentation/view/waiting_screen.dart';
-import 'package:fyp_source_code/chat/presentation/view/chat_screen.dart';
-import 'package:fyp_source_code/communities/presentation/view/communities_screen.dart';
+import 'package:fyp_source_code/view/alerts/presentation/view/alerts_screen.dart';
+import 'package:fyp_source_code/view/auth/presentation/bindings/auth_bindings.dart';
+import 'package:fyp_source_code/view/auth/presentation/view/login_screen_professional.dart';
+import 'package:fyp_source_code/view/auth/presentation/view/register_screen_professional.dart';
+import 'package:fyp_source_code/view/auth/presentation/view/role_selection_screen.dart';
+import 'package:fyp_source_code/view/auth/presentation/view/waiting_screen.dart';
+import 'package:fyp_source_code/view/chat/presentation/view/chat_screen.dart';
+import 'package:fyp_source_code/view/communities/presentation/view/communities_screen.dart';
 import 'package:fyp_source_code/routing/route_names.dart';
 import 'package:fyp_source_code/splash_onboardings/presentation/view/onboarding_screen_professional.dart';
 import 'package:fyp_source_code/splash_onboardings/presentation/view/splash_screen_professional.dart';
 import 'package:fyp_source_code/start_point/view.dart';
-import 'package:fyp_source_code/volunteer_side/coordination/presentation/view/coordination_screen.dart';
-import 'package:fyp_source_code/volunteer_side/home/presentation/view/home_screen.dart';
-import 'package:fyp_source_code/volunteer_side/map/presentation/view/map_screen.dart';
-import 'package:fyp_source_code/volunteer_side/volunteer_verification/presentation/view/admin_verification_screen.dart';
-import 'package:fyp_source_code/volunteer_side/profile/presentation/view/profile_screen.dart';
-import 'package:fyp_source_code/request_side/home/presentation/view/request_home_screen.dart';
+import 'package:fyp_source_code/view/volunteer_side/coordination/presentation/view/coordination_screen.dart';
+import 'package:fyp_source_code/view/volunteer_side/home/presentation/view/home_screen.dart';
+import 'package:fyp_source_code/view/volunteer_side/map/presentation/view/map_screen.dart';
+import 'package:fyp_source_code/view/volunteer_side/volunteer_verification/presentation/view/admin_verification_screen.dart';
+import 'package:fyp_source_code/view/volunteer_side/profile/presentation/view/profile_screen.dart';
+import 'package:fyp_source_code/view/request_side/home/presentation/view/request_home_screen.dart';
 import 'package:get/get.dart';
 
 class RoutePaths {

@@ -1,4 +1,4 @@
-import 'package:fyp_source_code/volunteer_side/volunteer_verification/presentation/controller/volunteer_verification_controller.dart';
+import 'package:fyp_source_code/view/volunteer_side/volunteer_verification/presentation/controller/volunteer_verification_controller.dart';
 import 'package:fyp_source_code/network/api_service.dart';
 import 'package:fyp_source_code/services/api_names.dart';
 import 'package:get/get.dart';

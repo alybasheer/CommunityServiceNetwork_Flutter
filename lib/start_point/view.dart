@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:fyp_source_code/communities/presentation/view/communities_screen.dart';
+import 'package:fyp_source_code/view/communities/presentation/view/communities_screen.dart';
 import 'package:fyp_source_code/start_point/veiw_cntrl.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
-import 'package:fyp_source_code/volunteer_side/home/presentation/view/home_screen.dart';
-import 'package:fyp_source_code/volunteer_side/map/presentation/view/map_screen.dart';
-import 'package:fyp_source_code/volunteer_side/profile/presentation/view/profile_screen.dart';
+import 'package:fyp_source_code/view/volunteer_side/home/presentation/view/home_screen.dart';
+import 'package:fyp_source_code/view/volunteer_side/map/presentation/view/map_screen.dart';
+import 'package:fyp_source_code/view/volunteer_side/profile/presentation/view/profile_screen.dart';
 import 'package:get/get.dart';
 
 class StartPoint extends StatelessWidget {
