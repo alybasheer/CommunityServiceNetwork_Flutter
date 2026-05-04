@@ -10,7 +10,7 @@ import 'package:fyp_source_code/utilities/validators/validators.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
-class ProfileController extends GetxController {
+class ProfileController extends GetxController with WidgetsBindingObserver {
   final storage = GetStorage();
 
   final nameController = TextEditingController();
@@ -29,8 +29,17 @@ class ProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
     refreshFromStorage();
     themeLoad();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      refreshFromStorage();
+      unawaited(themeLoad());
+    }
   }
 
   void refreshFromStorage() {
@@ -283,6 +292,7 @@ class ProfileController extends GetxController {
 
   @override
   void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
     nameController.dispose();
     emailController.dispose();
     locationController.dispose();

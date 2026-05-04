@@ -66,8 +66,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: WeHelpAppBar(
         title: widget.receiverName,
         showBack: true,
@@ -98,7 +101,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Text(
                       "No messages yet",
                       style: AppTextStyling.body_14M.copyWith(
-                        color: AppColors.grey,
+                        color: scheme.onSurfaceVariant,
                       ),
                     ),
                   );
@@ -148,7 +151,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         decoration: InputDecoration(
                           hintText: "Message...",
                           hintStyle: AppTextStyling.body_12S.copyWith(
-                            color: AppColors.grey,
+                            color: scheme.onSurfaceVariant,
                           ),
                           contentPadding: EdgeInsets.symmetric(
                             horizontal: AppSize.m,
@@ -168,10 +171,12 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor:
+                              theme.inputDecorationTheme.fillColor ??
+                              scheme.surface,
                         ),
                         style: AppTextStyling.body_12S.copyWith(
-                          color: AppColors.darkGray,
+                          color: scheme.onSurface,
                         ),
                       ),
                     ),
@@ -221,6 +226,12 @@ class ChatMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final receivedBubbleColor =
+        Theme.of(context).brightness == Brightness.dark
+            ? scheme.surfaceContainerHighest
+            : AppColors.background;
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -236,8 +247,7 @@ class ChatMessageBubble extends StatelessWidget {
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         decoration: BoxDecoration(
-          // Professional color scheme: Safety Blue for sent, Light color for received
-          color: isMe ? AppColors.safetyBlue : AppColors.background,
+          color: isMe ? AppColors.safetyBlue : receivedBubbleColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(isMe ? 20 : 4),
             topRight: Radius.circular(isMe ? 4 : 20),
@@ -261,7 +271,7 @@ class ChatMessageBubble extends StatelessWidget {
         child: Text(
           msg.content,
           style: AppTextStyling.body_14M.copyWith(
-            color: isMe ? AppColors.pureWhite : AppColors.darkGray,
+            color: isMe ? AppColors.pureWhite : scheme.onSurface,
             height: 1.4,
           ),
         ),

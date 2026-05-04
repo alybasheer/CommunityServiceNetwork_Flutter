@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 
@@ -14,7 +13,7 @@ class CustomTextField extends StatelessWidget {
   final Color? col;
   final bool? enabled;
   final Widget? leadingIcon;
- final Widget? suffixIcon;
+  final Widget? suffixIcon;
   final InputBorder? borderType;
   final double? fieldHeight;
   final InputBorder? focusBorder;
@@ -40,6 +39,9 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
     return TextFormField(
       validator: val,
       textAlign: TextAlign.start,
@@ -50,9 +52,11 @@ class CustomTextField extends StatelessWidget {
       controller: textControl,
       maxLines: hiddenText ? 1 : maxLines,
       enabled: enabled,
+      style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurface),
 
       decoration: InputDecoration(
         hintText: hintText?.data,
+        hintStyle: hintText?.style ?? theme.inputDecorationTheme.hintStyle,
         enabledBorder:
             borderType ??
             UnderlineInputBorder(
@@ -64,8 +68,8 @@ class CustomTextField extends StatelessWidget {
               borderSide: BorderSide(color: AppColors.silverGrey),
             ),
         helperText: underText,
-        fillColor: col,
-        filled: false,
+        fillColor: col ?? theme.inputDecorationTheme.fillColor,
+        filled: col != null || theme.inputDecorationTheme.filled == true,
         prefix: leadingIcon,
         contentPadding:
             fieldHeight != null

@@ -35,13 +35,16 @@ class _VerificationTextFieldState extends State<VerificationTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           widget.label,
           style: AppTextStyling.body_12S.copyWith(
-            color: AppColors.darkGray,
+            color: scheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -59,10 +62,10 @@ class _VerificationTextFieldState extends State<VerificationTextField> {
           decoration: InputDecoration(
             hintText: widget.hintText,
             hintStyle: AppTextStyling.body_12S.copyWith(
-              color: AppColors.lightGrey,
+              color: scheme.onSurfaceVariant,
             ),
             filled: true,
-            fillColor: Color(0xFFF5F7FA),
+            fillColor: theme.inputDecorationTheme.fillColor ?? scheme.surface,
             border: OutlineInputBorder(
               borderSide: BorderSide(color: AppColors.lightBorderGray),
               borderRadius: BorderRadius.circular(12),
@@ -88,7 +91,7 @@ class _VerificationTextFieldState extends State<VerificationTextField> {
                     ? Icon(widget.prefixIcon, color: AppColors.steelBlue)
                     : null,
           ),
-          style: AppTextStyling.body_12S,
+          style: AppTextStyling.body_12S.copyWith(color: scheme.onSurface),
         ),
         if (_errorMessage != null && _errorMessage!.isNotEmpty)
           Padding(

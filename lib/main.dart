@@ -25,18 +25,22 @@ class MyApp extends StatelessWidget {
     final profileCtrl = Get.find<ProfileController>();
 
     return ScreenUtilInit(
-      designSize: Size(375, 812),
+      designSize: const Size(375, 812),
       splitScreenMode: true,
       minTextAdapt: true,
       builder: (context, child) {
-        return GetMaterialApp(
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode:
-              profileCtrl.isSwitching.value ? ThemeMode.dark : ThemeMode.light,
-          debugShowCheckedModeBanner: false,
-          initialRoute: RouteNames.splash,
-          getPages: RoutePaths.routePath,
+        return Obx(
+          () => GetMaterialApp(
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode:
+                profileCtrl.isSwitching.value
+                    ? ThemeMode.dark
+                    : ThemeMode.light,
+            debugShowCheckedModeBanner: false,
+            initialRoute: RouteNames.splash,
+            getPages: RoutePaths.routePath,
+          ),
         );
       },
     );
