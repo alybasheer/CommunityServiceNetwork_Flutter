@@ -1,113 +1,167 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
 
 class VerificationImagePicker extends StatelessWidget {
-  final String? selectedImagePath;
+  final String label;
+  final String helperText;
+  final bool isRequired;
+  final Uint8List? imageBytes;
+  final String? fileName;
   final VoidCallback onTap;
   final bool isLoading;
 
   const VerificationImagePicker({
     super.key,
-    this.selectedImagePath,
+    required this.label,
+    required this.helperText,
     required this.onTap,
+    this.isRequired = false,
+    this.imageBytes,
+    this.fileName,
     this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final hasImage = imageBytes != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        RichText(
+          text: TextSpan(
+            style: AppTextStyling.body_12S.copyWith(
+              color: scheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
+            children: [
+              TextSpan(text: label),
+              if (isRequired)
+                TextSpan(
+                  text: ' *',
+                  style: AppTextStyling.body_12S.copyWith(
+                    color: AppColors.emergencyRed,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        AppSize.xsHeight,
         Text(
-          'Profile Photo',
+          helperText,
           style: AppTextStyling.body_12S.copyWith(
-            color: AppColors.darkGray,
-            fontWeight: FontWeight.w600,
+            color: scheme.onSurfaceVariant,
+            height: 1.35,
           ),
         ),
         AppSize.mHeight,
         GestureDetector(
           onTap: isLoading ? null : onTap,
-          child: Container(
-            height: 150,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            height: 154,
             width: double.infinity,
             decoration: BoxDecoration(
-              color:
-                  selectedImagePath == null
-                      ? Color(0xFFF5F7FA)
-                      : Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
+              color: hasImage
+                  ? scheme.surfaceContainerHighest
+                  : theme.inputDecorationTheme.fillColor ?? scheme.surface,
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color:
-                    selectedImagePath == null
-                        ? AppColors.lightBorderGray
-                        : AppColors.safetyBlue,
-                width: 2,
+                color: hasImage
+                    ? scheme.primary.withValues(alpha: 0.75)
+                    : scheme.outlineVariant,
+                width: hasImage ? 1.6 : 1,
               ),
             ),
-            child:
-                selectedImagePath == null
-                    ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.cloud_upload_outlined,
-                          size: 48,
-                          color: AppColors.steelBlue,
+            child: hasImage
+                ? Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Image.memory(
+                          imageBytes!,
+                          fit: BoxFit.cover,
                         ),
-                        AppSize.mHeight,
-                        Text(
-                          'Tap to upload photo',
-                          style: AppTextStyling.body_12S.copyWith(
-                            color: AppColors.steelBlue,
-                            fontWeight: FontWeight.w600,
+                      ),
+                      Positioned(
+                        left: 12,
+                        right: 12,
+                        bottom: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
                           ),
-                        ),
-                        AppSize.sHeight,
-                        Text(
-                          'PNG, JPG up to 5MB',
-                          style: AppTextStyling.body_12S.copyWith(
-                            color: AppColors.grey,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.55),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                      ],
-                    )
-                    : Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Container(
-                          color: Colors.grey[300],
-                          child: Center(
-                            child: Icon(
-                              Icons.image,
-                              size: 48,
-                              color: AppColors.steelBlue,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: GestureDetector(
-                            onTap: isLoading ? null : onTap,
-                            child: Container(
-                              padding: EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: AppColors.emergencyRed,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.edit,
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.image_rounded,
                                 color: Colors.white,
-                                size: 16,
+                                size: 18,
                               ),
-                            ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  fileName?.trim().isNotEmpty == true
+                                      ? fileName!.trim()
+                                      : 'Selected image',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyling.body_12S.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.edit_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.cloud_upload_rounded,
+                        size: 42,
+                        color: scheme.primary,
+                      ),
+                      AppSize.sHeight,
+                      Text(
+                        'Tap to upload',
+                        style: AppTextStyling.body_14M.copyWith(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      AppSize.xsHeight,
+                      Text(
+                        'JPG or PNG up to 5MB',
+                        style: AppTextStyling.body_12S.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
         AppSize.lHeight,

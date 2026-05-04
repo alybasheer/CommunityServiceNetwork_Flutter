@@ -7,6 +7,9 @@ class VolunteerVerification {
   String? expertise;
   String? reason;
   String? cnic;
+  String? cnicFrontImage;
+  String? cnicBackImage;
+  String? profileImage;
   String? status;
   String? createdAt;
   String? updatedAt;
@@ -20,6 +23,9 @@ class VolunteerVerification {
     this.expertise,
     this.reason,
     this.cnic,
+    this.cnicFrontImage,
+    this.cnicBackImage,
+    this.profileImage,
     this.status,
     this.createdAt,
     this.updatedAt,
@@ -34,6 +40,12 @@ class VolunteerVerification {
     expertise = json['expertise'];
     reason = json['reason'];
     cnic = json['cnic'];
+    cnicFrontImage =
+        json['cnicFrontImage'] ?? json['cnic_front_image'] ?? json['cnicFront'];
+    cnicBackImage =
+        json['cnicBackImage'] ?? json['cnic_back_image'] ?? json['cnicBack'];
+    profileImage =
+        json['profileImage'] ?? json['profile_image'] ?? json['image'];
     status = json['status'];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
@@ -49,6 +61,9 @@ class VolunteerVerification {
     data['expertise'] = expertise;
     data['reason'] = reason;
     data['cnic'] = cnic;
+    data['cnicFrontImage'] = cnicFrontImage;
+    data['cnicBackImage'] = cnicBackImage;
+    data['profileImage'] = profileImage;
     data['status'] = status;
     data['createdAt'] = createdAt;
     data['updatedAt'] = updatedAt;

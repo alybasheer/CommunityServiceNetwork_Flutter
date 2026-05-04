@@ -168,6 +168,13 @@ class AuthController extends GetxController {
           resp.user!.location!.trim(),
         );
       }
+      if (resp.user!.profileImage != null &&
+          resp.user!.profileImage!.trim().isNotEmpty) {
+        StorageHelper().saveData(
+          'profile_image',
+          resp.user!.profileImage!.trim(),
+        );
+      }
 
       // Debug logs
       print('✅ Login successful');
@@ -249,6 +256,13 @@ class AuthController extends GetxController {
         StorageHelper().saveData(
           'profile_location',
           resp.user!.location!.trim(),
+        );
+      }
+      if (resp.user?.profileImage != null &&
+          resp.user!.profileImage!.trim().isNotEmpty) {
+        StorageHelper().saveData(
+          'profile_image',
+          resp.user!.profileImage!.trim(),
         );
       }
 

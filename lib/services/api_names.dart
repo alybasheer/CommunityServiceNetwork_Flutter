@@ -11,6 +11,7 @@ class ApiNames {
   static const signup = 'authentication/signup';
   static const login = 'authentication/login';
   static const voulnteerVerification = 'volunteer/apply';
+  static const volunteerMedia = 'volunteer/media';
   static const voulnteerApplications = 'admin/volunteer-applications';
   static String approveVolunteer(String id) =>
       'admin/volunteer-applications/$id/approve';

@@ -1,6 +1,19 @@
 import 'package:fyp_source_code/volunteer_side/volunteer_verification/data/model/admin_verification_request.dart';
+import 'package:dio/dio.dart';
 import 'package:fyp_source_code/network/api_service.dart';
 import 'package:fyp_source_code/services/api_names.dart';
+
+class VolunteerMediaUpload {
+  final String filename;
+  final List<int> bytes;
+  final String? mimeType;
+
+  const VolunteerMediaUpload({
+    required this.filename,
+    required this.bytes,
+    this.mimeType,
+  });
+}
 
 class VolunteerVerificationRepo {
   final DioHelper _dioHelper = DioHelper();
@@ -68,5 +81,51 @@ class VolunteerVerificationRepo {
         'Expected a Map or List from API, got ${response.runtimeType}',
       );
     }
+  }
+
+  Future<List<String>> uploadVolunteerMedia(
+    List<VolunteerMediaUpload> files,
+  ) async {
+    if (files.isEmpty) {
+      return <String>[];
+    }
+
+    final formData = FormData.fromMap({
+      'files':
+          files.map((file) {
+            return MultipartFile.fromBytes(
+              file.bytes,
+              filename: file.filename,
+              contentType:
+                  file.mimeType == null
+                      ? null
+                      : DioMediaType.parse(file.mimeType!),
+            );
+          }).toList(),
+    });
+
+    final response = await _dioHelper.post(
+      url: ApiNames.volunteerMedia,
+      reqBody: formData,
+      isauthorize: true,
+      isFormData: true,
+    );
+
+    if (response is Map) {
+      final responseMap = Map<String, dynamic>.from(response);
+      final data = responseMap['data'];
+      final urls =
+          data is Map && data['mediaUrls'] is List
+              ? data['mediaUrls'] as List
+              : responseMap['mediaUrls'] as List?;
+      if (urls != null) {
+        return urls
+            .map((item) => item?.toString().trim() ?? '')
+            .where((item) => item.isNotEmpty)
+            .toList();
+      }
+    }
+
+    return <String>[];
   }
 }

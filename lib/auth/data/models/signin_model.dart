@@ -73,6 +73,7 @@ class User {
   String? role;
   String? fullName;
   String? location;
+  String? profileImage;
   String? verificationStatus; // NEW: Add verification status from backend
 
   User({
@@ -82,6 +83,7 @@ class User {
     this.role,
     this.fullName,
     this.location,
+    this.profileImage,
     this.id,
     this.verificationStatus, // NEW: Include in constructor
   });
@@ -96,6 +98,11 @@ class User {
     final rawLocation =
         json['location'] ?? json['city'] ?? json['locationName'] ?? json['area'];
     location = _normalizeLocation(rawLocation);
+    profileImage =
+        json['profileImage'] ??
+        json['profile_image'] ??
+        json['avatar'] ??
+        json['image'];
 
     // Parse verificationStatus with multiple field name support
     verificationStatus =
@@ -144,6 +151,9 @@ class User {
     if (location != null) {
       data['location'] = location;
     }
+    if (profileImage != null) {
+      data['profileImage'] = profileImage;
+    }
     if (id != null) {
       data['id'] = id;
     }
@@ -162,6 +172,7 @@ class User {
     String? password,
     String? role,
     String? location,
+    String? profileImage,
     String? verificationStatus,
   }) {
     return User(
@@ -172,11 +183,12 @@ class User {
       password: password ?? this.password,
       role: role ?? this.role,
       location: location ?? this.location,
+      profileImage: profileImage ?? this.profileImage,
       verificationStatus: verificationStatus ?? this.verificationStatus,
     );
   }
 
   @override
   String toString() =>
-      'User(id: $id, username: $username, fullName: $fullName, email: $email, role: $role, location: $location, verificationStatus: $verificationStatus)';
+      'User(id: $id, username: $username, fullName: $fullName, email: $email, role: $role, location: $location, profileImage: $profileImage, verificationStatus: $verificationStatus)';
 }

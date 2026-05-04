@@ -6,9 +6,28 @@ import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:fyp_source_code/utilities/validators/validators.dart';
 import 'package:fyp_source_code/utilities/validators/verification_validators.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
+
+class VolunteerVerificationPhoto {
+  final XFile file;
+  final Uint8List bytes;
+
+  const VolunteerVerificationPhoto({required this.file, required this.bytes});
+
+  String get name {
+    final pathName = file.path.split(RegExp(r'[\\/]')).last.trim();
+    return pathName.isNotEmpty ? pathName : file.name;
+  }
+
+  String? get mimeType => file.mimeType;
+}
 
 class VolunteerVerificationController extends GetxController {
+  static const int maxPhotoBytes = 5 * 1024 * 1024;
+
   final fullNameController = TextEditingController();
+  final emailController = TextEditingController();
   final expertiseController = TextEditingController();
   final cnicController = TextEditingController();
   final descriptionController = TextEditingController();
@@ -25,16 +44,23 @@ class VolunteerVerificationController extends GetxController {
   final RxString emailError = ''.obs;
 
   // UI state observables
-  final Rx<String?> selectedImagePath = Rx<String?>(null);
+  final Rxn<VolunteerVerificationPhoto> cnicFrontPhoto =
+      Rxn<VolunteerVerificationPhoto>();
+  final Rxn<VolunteerVerificationPhoto> cnicBackPhoto =
+      Rxn<VolunteerVerificationPhoto>();
+  final Rxn<VolunteerVerificationPhoto> profilePhoto =
+      Rxn<VolunteerVerificationPhoto>();
   final RxBool isSubmitting = false.obs;
   final RxList<VolunteerVerification> submissions = RxList();
 
   final verificationFormKey = GlobalKey<FormState>();
   final VolunteerVerificationRepo _repo = VolunteerVerificationRepo();
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void onInit() {
     super.onInit();
+    _prefillStoredProfile();
     loadSubmissions();
   }
 
@@ -91,8 +117,16 @@ class VolunteerVerificationController extends GetxController {
     }
   }
 
-  void setImagePath(String path) {
-    selectedImagePath.value = path;
+  Future<void> pickCnicFrontPhoto() async {
+    cnicFrontPhoto.value = await _pickSinglePhoto();
+  }
+
+  Future<void> pickCnicBackPhoto() async {
+    cnicBackPhoto.value = await _pickSinglePhoto();
+  }
+
+  Future<void> pickProfilePhoto() async {
+    profilePhoto.value = await _pickSinglePhoto();
   }
 
   // ============ SUBMIT VERIFICATION ============
@@ -103,11 +137,10 @@ class VolunteerVerificationController extends GetxController {
       return;
     }
 
-    // // Validate image is selected
-    // if (selectedImagePath.value == null || selectedImagePath.value!.isEmpty) {
-    //   ToastHelper.showError('Please upload a profile photo');
-    //   return;
-    // }
+    if (cnicFrontPhoto.value == null || cnicBackPhoto.value == null) {
+      ToastHelper.showError('Please upload CNIC front and back images.');
+      return;
+    }
 
     isSubmitting.value = true;
 
@@ -117,6 +150,12 @@ class VolunteerVerificationController extends GetxController {
         throw Exception('User not authenticated. Please login again');
       }
 
+      final uploadedUrls = await _uploadVerificationMedia();
+      if (uploadedUrls['cnicFrontImage'] == null ||
+          uploadedUrls['cnicBackImage'] == null) {
+        throw Exception('Could not upload CNIC images.');
+      }
+
       final reqBody = {
         'name': fullNameController.text.trim(),
         'expertise': expertiseController.text.trim(),
@@ -124,7 +163,10 @@ class VolunteerVerificationController extends GetxController {
         'reason': descriptionController.text.trim(),
         'location': locationController.text.trim(),
         'city': cityController.text.trim(),
-        'imagePath': selectedImagePath.value,
+        'cnicFrontImage': uploadedUrls['cnicFrontImage'],
+        'cnicBackImage': uploadedUrls['cnicBackImage'],
+        if (uploadedUrls['profileImage'] != null)
+          'profileImage': uploadedUrls['profileImage'],
       };
 
       print('📤 Verification payload: $reqBody');
@@ -141,6 +183,10 @@ class VolunteerVerificationController extends GetxController {
         'verificationStatus',
         submission.status ?? 'pending',
       );
+      final savedProfileImage = uploadedUrls['profileImage'];
+      if (savedProfileImage != null && savedProfileImage.isNotEmpty) {
+        StorageHelper().saveData('profile_image', savedProfileImage);
+      }
 
       ToastHelper.showSuccess('Verification request submitted!');
       clearForm();
@@ -168,18 +214,28 @@ class VolunteerVerificationController extends GetxController {
         descriptionController.text.isNotEmpty &&
         locationController.text.isNotEmpty &&
         cityController.text.isNotEmpty &&
-        selectedImagePath.value != null;
+        cnicFrontPhoto.value != null &&
+        cnicBackPhoto.value != null;
   }
 
   // ============ CLEAR FORM ============
   void clearForm() {
-    fullNameController.clear();
+    final savedName = StorageHelper().readData('profile_name')?.toString().trim();
+    final savedEmail = StorageHelper().readData('email')?.toString().trim();
+    final savedLocation =
+        StorageHelper().readData('profile_location')?.toString().trim();
+
+    fullNameController.text = savedName?.isNotEmpty == true ? savedName! : '';
+    emailController.text = savedEmail?.isNotEmpty == true ? savedEmail! : '';
     expertiseController.clear();
     cnicController.clear();
     descriptionController.clear();
-    locationController.clear();
     cityController.clear();
-    selectedImagePath.value = null;
+    locationController.text =
+        savedLocation?.isNotEmpty == true ? savedLocation! : '';
+    cnicFrontPhoto.value = null;
+    cnicBackPhoto.value = null;
+    profilePhoto.value = null;
 
     fullNameError.value = '';
     expertiseError.value = '';
@@ -205,11 +261,98 @@ class VolunteerVerificationController extends GetxController {
   @override
   void onClose() {
     fullNameController.dispose();
+    emailController.dispose();
     expertiseController.dispose();
     cnicController.dispose();
     descriptionController.dispose();
     locationController.dispose();
     cityController.dispose();
     super.onClose();
+  }
+
+  Future<VolunteerVerificationPhoto?> _pickSinglePhoto() async {
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 82,
+      );
+      if (picked == null) {
+        return null;
+      }
+
+      final bytes = await picked.readAsBytes();
+      if (bytes.length > maxPhotoBytes) {
+        ToastHelper.showWarning('Each image must be 5MB or less.');
+        return null;
+      }
+
+      return VolunteerVerificationPhoto(file: picked, bytes: bytes);
+    } catch (e) {
+      ToastHelper.showErrorMessage(e);
+      return null;
+    }
+  }
+
+  Future<Map<String, String?>> _uploadVerificationMedia() async {
+    final uploads = <VolunteerMediaUpload>[];
+    final keys = <String>[];
+
+    if (cnicFrontPhoto.value != null) {
+      uploads.add(
+        VolunteerMediaUpload(
+          filename: cnicFrontPhoto.value!.name,
+          bytes: cnicFrontPhoto.value!.bytes,
+          mimeType: cnicFrontPhoto.value!.mimeType,
+        ),
+      );
+      keys.add('cnicFrontImage');
+    }
+
+    if (cnicBackPhoto.value != null) {
+      uploads.add(
+        VolunteerMediaUpload(
+          filename: cnicBackPhoto.value!.name,
+          bytes: cnicBackPhoto.value!.bytes,
+          mimeType: cnicBackPhoto.value!.mimeType,
+        ),
+      );
+      keys.add('cnicBackImage');
+    }
+
+    if (profilePhoto.value != null) {
+      uploads.add(
+        VolunteerMediaUpload(
+          filename: profilePhoto.value!.name,
+          bytes: profilePhoto.value!.bytes,
+          mimeType: profilePhoto.value!.mimeType,
+        ),
+      );
+      keys.add('profileImage');
+    }
+
+    final urls = await _repo.uploadVolunteerMedia(uploads);
+    final mapped = <String, String?>{};
+    for (var i = 0; i < keys.length; i++) {
+      mapped[keys[i]] = i < urls.length ? urls[i] : null;
+    }
+    return mapped;
+  }
+
+  void _prefillStoredProfile() {
+    final storage = StorageHelper();
+    final savedName = storage.readData('profile_name')?.toString().trim() ?? '';
+    final savedEmail = storage.readData('email')?.toString().trim() ?? '';
+    final savedLocation =
+        storage.readData('profile_location')?.toString().trim() ?? '';
+
+    if (savedName.isNotEmpty) {
+      fullNameController.text = savedName;
+    }
+    if (savedEmail.isNotEmpty) {
+      emailController.text = savedEmail;
+    }
+    if (savedLocation.isNotEmpty) {
+      locationController.text = savedLocation;
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_colors.dart';
 import 'package:fyp_source_code/utilities/reuse_components/app_text.dart';
 import 'package:fyp_source_code/utilities/reuse_components/spacing.dart';
+import 'package:fyp_source_code/utilities/reuse_components/storage_helper.dart';
 import 'package:fyp_source_code/volunteer_side/profile/presentation/controller/profile_controller.dart';
 import 'package:get/get.dart';
 
@@ -38,13 +39,16 @@ class ProfileHero extends StatelessWidget {
                 CircleAvatar(
                   radius: 32,
                   backgroundColor: AppColors.pureWhite.withValues(alpha: 0.18),
-                  child: Text(
-                    controller.initials,
-                    style: AppTextStyling.title_22L.copyWith(
-                      color: AppColors.pureWhite,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                  backgroundImage: _resolveAvatar(controller.profileImage.value),
+                  child: controller.profileImage.value.trim().isNotEmpty
+                      ? null
+                      : Text(
+                          controller.initials,
+                          style: AppTextStyling.title_22L.copyWith(
+                            color: AppColors.pureWhite,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                 ),
                 SizedBox(width: AppSize.m),
                 Expanded(
@@ -817,4 +821,25 @@ class _ProfileAction {
     required this.color,
     required this.onTap,
   });
+}
+
+ImageProvider? _resolveAvatar(String? imageUrl) {
+  final value = imageUrl?.trim() ?? '';
+  if (value.isEmpty) {
+    return null;
+  }
+  if (value.startsWith('http')) {
+    final token = StorageHelper().readData('token')?.toString().trim();
+    return NetworkImage(
+      value,
+      headers:
+          token == null || token.isEmpty
+              ? null
+              : {'Authorization': 'Bearer $token'},
+    );
+  }
+  if (value.startsWith('assets/')) {
+    return AssetImage(value);
+  }
+  return null;
 }

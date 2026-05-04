@@ -25,6 +25,7 @@ class ProfileController extends GetxController with WidgetsBindingObserver {
   final profileName = ''.obs;
   final profileEmail = ''.obs;
   final profileLocation = ''.obs;
+  final profileImage = ''.obs;
 
   @override
   void onInit() {
@@ -58,6 +59,12 @@ class ProfileController extends GetxController with WidgetsBindingObserver {
       'city',
       'location',
     ], fallback: 'Location not set');
+    final savedProfileImage = _readFirstString([
+      'profile_image',
+      'profileImage',
+      'avatar',
+      'image',
+    ]);
 
     nameController.text = savedName;
     emailController.text = savedEmail;
@@ -67,6 +74,7 @@ class ProfileController extends GetxController with WidgetsBindingObserver {
             : savedLocation;
     role.value = _normalizeRole(_readFirstString(['role']));
     verificationStatus.value = _readFirstString(['verificationStatus']);
+    profileImage.value = savedProfileImage;
     isSwitching.value =
         storage.read('theme') == true || storage.read('dark_mode') == true;
     _syncPreviewFields();
@@ -97,6 +105,7 @@ class ProfileController extends GetxController with WidgetsBindingObserver {
       if (location.isNotEmpty) {
         storage.write('profile_location', location);
       }
+      storage.write('profile_image', profileImage.value.trim());
       _syncPreviewFields();
       ToastHelper.showSuccess('Profile updated.');
     } finally {
@@ -287,6 +296,7 @@ class ProfileController extends GetxController with WidgetsBindingObserver {
     locationController.text = 'Location not set';
     role.value = '';
     verificationStatus.value = '';
+    profileImage.value = '';
     _syncPreviewFields();
   }
 
