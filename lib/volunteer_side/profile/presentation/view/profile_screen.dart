@@ -21,10 +21,13 @@ class ProfileScreen extends StatelessWidget {
       appBar: WeHelpAppBar(
         title: 'Profile',
         subtitle: 'Account, role, and preferences',
+        showBack: true,
+        onBack: ctrl.goBackOrHome,
         actions: [
           IconButton(
-            onPressed: ctrl.openPrimaryWorkspace,
-            icon: const Icon(Icons.dashboard_rounded, color: Colors.white),
+            onPressed: ctrl.goHome,
+            tooltip: 'Home',
+            icon: const Icon(Icons.home_rounded, color: Colors.white),
           ),
         ],
       ),

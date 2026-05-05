@@ -56,112 +56,114 @@ class VerificationImagePicker extends StatelessWidget {
         AppSize.xsHeight,
         Text(
           helperText,
+          maxLines: 3,
+          overflow: TextOverflow.visible,
           style: AppTextStyling.body_12S.copyWith(
             color: scheme.onSurfaceVariant,
             height: 1.35,
           ),
         ),
-        AppSize.mHeight,
+        AppSize.sHeight,
         GestureDetector(
           onTap: isLoading ? null : onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
-            height: 154,
+            height: hasImage ? 132 : 112,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: hasImage
-                  ? scheme.surfaceContainerHighest
-                  : theme.inputDecorationTheme.fillColor ?? scheme.surface,
+              color:
+                  hasImage
+                      ? scheme.surfaceContainerHighest
+                      : theme.inputDecorationTheme.fillColor ?? scheme.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: hasImage
-                    ? scheme.primary.withValues(alpha: 0.75)
-                    : scheme.outlineVariant,
+                color:
+                    hasImage
+                        ? scheme.primary.withValues(alpha: 0.75)
+                        : scheme.outlineVariant,
                 width: hasImage ? 1.6 : 1,
               ),
             ),
-            child: hasImage
-                ? Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.memory(
-                          imageBytes!,
-                          fit: BoxFit.cover,
+            child:
+                hasImage
+                    ? Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: Image.memory(imageBytes!, fit: BoxFit.cover),
                         ),
-                      ),
-                      Positioned(
-                        left: 12,
-                        right: 12,
-                        bottom: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.55),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.image_rounded,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  fileName?.trim().isNotEmpty == true
-                                      ? fileName!.trim()
-                                      : 'Selected image',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyling.body_12S.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
+                        Positioned(
+                          left: 10,
+                          right: 10,
+                          bottom: 10,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.55),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.image_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    fileName?.trim().isNotEmpty == true
+                                        ? fileName!.trim()
+                                        : 'Selected image',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyling.body_12S.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.edit_rounded,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ],
+                                const SizedBox(width: 8),
+                                const Icon(
+                                  Icons.edit_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.cloud_upload_rounded,
-                        size: 42,
-                        color: scheme.primary,
-                      ),
-                      AppSize.sHeight,
-                      Text(
-                        'Tap to upload',
-                        style: AppTextStyling.body_14M.copyWith(
+                      ],
+                    )
+                    : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.cloud_upload_rounded,
+                          size: 34,
                           color: scheme.primary,
-                          fontWeight: FontWeight.w700,
                         ),
-                      ),
-                      AppSize.xsHeight,
-                      Text(
-                        'JPG or PNG up to 5MB',
-                        style: AppTextStyling.body_12S.copyWith(
-                          color: scheme.onSurfaceVariant,
+                        AppSize.xsHeight,
+                        Text(
+                          'Tap to upload',
+                          style: AppTextStyling.body_14M.copyWith(
+                            color: scheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'JPG or PNG up to 5MB',
+                          style: AppTextStyling.body_12S.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
           ),
         ),
         AppSize.lHeight,

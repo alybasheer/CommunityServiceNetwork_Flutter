@@ -149,6 +149,8 @@ class ProfileController extends GetxController with WidgetsBindingObserver {
 
   bool get isVolunteer => role.value == 'volunteer';
 
+  bool get isAdmin => role.value == 'admin';
+
   bool get isRequestee {
     return role.value == 'requestee' ||
         role.value == 'request_help' ||
@@ -210,11 +212,28 @@ class ProfileController extends GetxController with WidgetsBindingObserver {
   }
 
   void openPrimaryWorkspace() {
+    if (isAdmin) {
+      Get.offAllNamed(RouteNames.adminPanel);
+      return;
+    }
     if (isVolunteer) {
       Get.offAllNamed(RouteNames.startPoint);
       return;
     }
     Get.offAllNamed(RouteNames.requestHome);
+  }
+
+  void goHome() {
+    openPrimaryWorkspace();
+  }
+
+  void goBackOrHome() {
+    final navigator = Get.key.currentState;
+    if (navigator?.canPop() == true) {
+      Get.back();
+      return;
+    }
+    goHome();
   }
 
   void openAlerts() {

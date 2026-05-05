@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_source_code/services/location_services.dart';
 import 'package:fyp_source_code/volunteer_side/volunteer_verification/data/model/admin_verification_request.dart';
 import 'package:fyp_source_code/volunteer_side/volunteer_verification/data/repo/volunteer_verification_repo.dart';
 import 'package:fyp_source_code/utilities/helpers/toast_helper.dart';
@@ -51,6 +52,9 @@ class VolunteerVerificationController extends GetxController {
   final Rxn<VolunteerVerificationPhoto> profilePhoto =
       Rxn<VolunteerVerificationPhoto>();
   final RxBool isSubmitting = false.obs;
+  final RxBool isResolvingLocation = false.obs;
+  final RxnDouble latitude = RxnDouble();
+  final RxnDouble longitude = RxnDouble();
   final RxList<VolunteerVerification> submissions = RxList();
 
   final verificationFormKey = GlobalKey<FormState>();
@@ -129,6 +133,35 @@ class VolunteerVerificationController extends GetxController {
     profilePhoto.value = await _pickSinglePhoto();
   }
 
+  Future<void> useCurrentLocation() async {
+    isResolvingLocation.value = true;
+    try {
+      final position = await getCurrentLocation();
+      latitude.value = position.latitude;
+      longitude.value = position.longitude;
+
+      final locationName = await getLocationNameFromCoordinates(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
+      final readableLocation =
+          locationName == 'Location unavailable'
+              ? 'Near ${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)}'
+              : locationName;
+
+      locationController.text = readableLocation;
+      if (cityController.text.trim().isEmpty) {
+        cityController.text = _cityFromLocation(readableLocation);
+      }
+
+      ToastHelper.showSuccess('Current location added.');
+    } catch (e) {
+      ToastHelper.showErrorMessage(e);
+    } finally {
+      isResolvingLocation.value = false;
+    }
+  }
+
   // ============ SUBMIT VERIFICATION ============
   Future<void> submitVerification() async {
     // Validate form
@@ -163,20 +196,24 @@ class VolunteerVerificationController extends GetxController {
         'reason': descriptionController.text.trim(),
         'location': locationController.text.trim(),
         'city': cityController.text.trim(),
+        if (latitude.value != null && longitude.value != null) ...{
+          'latitude': latitude.value,
+          'longitude': longitude.value,
+        },
         'cnicFrontImage': uploadedUrls['cnicFrontImage'],
         'cnicBackImage': uploadedUrls['cnicBackImage'],
         if (uploadedUrls['profileImage'] != null)
           'profileImage': uploadedUrls['profileImage'],
       };
 
-      print('📤 Verification payload: $reqBody');
+      debugPrint('Verification payload: $reqBody');
 
       // Submit returns a single VolunteerVerification object
       final submission = await _repo.submit(reqBody);
 
-      print(' Verification submitted successfully');
-      print(' Submission ID: ${submission.sId}');
-      print(' Submission Status: ${submission.status}');
+      debugPrint('Verification submitted successfully');
+      debugPrint('Submission ID: ${submission.sId}');
+      debugPrint('Submission Status: ${submission.status}');
 
       // Save verification status to storage
       StorageHelper().saveData(
@@ -199,7 +236,7 @@ class VolunteerVerificationController extends GetxController {
         );
       });
     } catch (e) {
-      print('❌ Verification error: $e');
+      debugPrint('Verification error: $e');
       ToastHelper.showError(e.toString().replaceAll('Exception: ', ''));
     } finally {
       isSubmitting.value = false;
@@ -220,7 +257,8 @@ class VolunteerVerificationController extends GetxController {
 
   // ============ CLEAR FORM ============
   void clearForm() {
-    final savedName = StorageHelper().readData('profile_name')?.toString().trim();
+    final savedName =
+        StorageHelper().readData('profile_name')?.toString().trim();
     final savedEmail = StorageHelper().readData('email')?.toString().trim();
     final savedLocation =
         StorageHelper().readData('profile_location')?.toString().trim();
@@ -236,6 +274,8 @@ class VolunteerVerificationController extends GetxController {
     cnicFrontPhoto.value = null;
     cnicBackPhoto.value = null;
     profilePhoto.value = null;
+    latitude.value = null;
+    longitude.value = null;
 
     fullNameError.value = '';
     expertiseError.value = '';
@@ -251,10 +291,10 @@ class VolunteerVerificationController extends GetxController {
         .fetchAll()
         .then((list) {
           submissions.assignAll(list);
-          print('✅ Loaded ${list.length} submissions');
+          debugPrint('Loaded ${list.length} submissions');
         })
         .catchError((e) {
-          print('❌ Failed to load verifications: $e');
+          debugPrint('Failed to load verifications: $e');
         });
   }
 
@@ -354,5 +394,21 @@ class VolunteerVerificationController extends GetxController {
     if (savedLocation.isNotEmpty) {
       locationController.text = savedLocation;
     }
+  }
+
+  String _cityFromLocation(String value) {
+    final parts =
+        value
+            .split(',')
+            .map((part) => part.trim())
+            .where((part) => part.isNotEmpty)
+            .toList();
+    if (parts.isEmpty) {
+      return '';
+    }
+    if (parts.length >= 2) {
+      return parts[parts.length - 2];
+    }
+    return parts.first;
   }
 }

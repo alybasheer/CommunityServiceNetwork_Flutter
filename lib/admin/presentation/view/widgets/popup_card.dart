@@ -5,8 +5,9 @@ import 'package:get/get.dart';
 
 final AdminPanelController ctrl = Get.find<AdminPanelController>();
 
-void popupCard(BuildContext context, String applicationId, int index) {
-  final data = Map<String, dynamic>.from(ctrl.res[index] as Map);
+void popupCard(BuildContext context, Map<String, dynamic> application) {
+  final data = Map<String, dynamic>.from(application);
+  final applicationId = _stringValue(data['_id']);
   final userData =
       data['userId'] is Map
           ? Map<String, dynamic>.from(data['userId'] as Map)
@@ -51,7 +52,9 @@ void popupCard(BuildContext context, String applicationId, int index) {
                         Center(
                           child: CircleAvatar(
                             radius: 38,
-                            backgroundColor: Colors.blue.withValues(alpha: 0.10),
+                            backgroundColor: Colors.blue.withValues(
+                              alpha: 0.10,
+                            ),
                             backgroundImage: NetworkImage(
                               _stringValue(data['profileImage']),
                               headers: imageHeaders,
@@ -75,15 +78,16 @@ void popupCard(BuildContext context, String applicationId, int index) {
                       ),
                       _infoRow('City', _stringValue(data['city'])),
                       _infoRow('Location', _stringValue(data['location'])),
+                      if (_coordinateText(data).isNotEmpty)
+                        _infoRow('GPS', _coordinateText(data)),
                       _infoRow('Expertise', _stringValue(data['expertise'])),
                       _infoRow('CNIC', _stringValue(data['cnic'])),
                       _infoRow('Reason', _stringValue(data['reason'])),
                       const SizedBox(height: 18),
                       Text(
                         'Verification Documents',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 12),
                       _DocumentPreview(
@@ -175,6 +179,15 @@ String _stringValue(dynamic value) {
   return value.toString().trim();
 }
 
+String _coordinateText(Map<String, dynamic> data) {
+  final lat = _stringValue(data['latitude']);
+  final lng = _stringValue(data['longitude']);
+  if (lat.isEmpty || lng.isEmpty) {
+    return '';
+  }
+  return '$lat, $lng';
+}
+
 class _DocumentPreview extends StatelessWidget {
   final String title;
   final String imageUrl;
@@ -209,23 +222,24 @@ class _DocumentPreview extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.grey.shade300),
           ),
-          child: hasImage
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    headers: headers,
-                    errorBuilder: (_, __, ___) => _emptyDocumentState(),
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) {
-                        return child;
-                      }
-                      return const Center(child: CircularProgressIndicator());
-                    },
-                  ),
-                )
-              : _emptyDocumentState(),
+          child:
+              hasImage
+                  ? ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      headers: headers,
+                      errorBuilder: (_, __, ___) => _emptyDocumentState(),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        }
+                        return const Center(child: CircularProgressIndicator());
+                      },
+                    ),
+                  )
+                  : _emptyDocumentState(),
         ),
       ],
     );
