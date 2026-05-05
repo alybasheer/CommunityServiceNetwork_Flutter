@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fyp_source_code/auth/data/models/signin_model.dart';
 import 'package:fyp_source_code/auth/data/repo/login-_repo.dart';
@@ -38,6 +40,7 @@ class AuthController extends GetxController {
   SignupModel signupModel = SignupModel();
   SignupModel loginModel = SignupModel();
   User user = User();
+  Future<void>? _backendWarmup;
 
   @override
   void onInit() {
@@ -48,6 +51,7 @@ class AuthController extends GetxController {
     passController.addListener(_validateFormState);
     usernameController.addListener(_validateFormState);
     confirmPassController.addListener(_validateFormState);
+    _backendWarmup = DioHelper().warmUpBackend();
   }
 
   // ============ FORM STATE MANAGEMENT ============
@@ -122,6 +126,11 @@ class AuthController extends GetxController {
     isLoading.value = true;
 
     try {
+      await _backendWarmup?.timeout(
+        const Duration(seconds: 95),
+        onTimeout: () {},
+      );
+
       // Create login request
       loginModel.user = User(
         email: emailController.text.trim(),

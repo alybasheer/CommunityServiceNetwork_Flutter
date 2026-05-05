@@ -7,6 +7,7 @@ import 'package:get/get.dart' hide Response;
 
 class DioHelper {
   Dio dio = getDio();
+  static const _retryDelay = Duration(seconds: 2);
 
   void _handleErrorResponse(String url, Response response) {
     if (response.statusCode == 404) {
@@ -42,12 +43,51 @@ class DioHelper {
     Future.microtask(() => Get.offAllNamed(RouteNames.login));
   }
 
+  Future<void> warmUpBackend() async {
+    try {
+      await _withRetry(() => dio.get('/'), allowRetry: true);
+    } catch (_) {
+      // Login/request calls still handle their own error state.
+    }
+  }
+
+  Future<Response> _withRetry(
+    Future<Response> Function() request, {
+    bool allowRetry = true,
+  }) async {
+    try {
+      return await request();
+    } on DioException catch (e) {
+      if (!allowRetry || !_isRetryableNetworkIssue(e)) {
+        rethrow;
+      }
+      await Future.delayed(_retryDelay);
+      return request();
+    }
+  }
+
+  bool _isRetryableNetworkIssue(DioException error) {
+    return error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.connectionError ||
+        (error.type == DioExceptionType.unknown && error.response == null);
+  }
+
+  FetchDataExceptions _networkException(DioException e) {
+    if (_isRetryableNetworkIssue(e)) {
+      return FetchDataExceptions(
+        'Server is waking up or the network is slow. Please try again.',
+      );
+    }
+    return FetchDataExceptions(e.message ?? 'Network Error');
+  }
+
   //get
   Future<dynamic> get({required String url, bool isauthorize = false}) async {
     try {
-      Response response = await dio.get(
-        url,
-        options: getOptions(isauthorize: isauthorize),
+      Response response = await _withRetry(
+        () => dio.get(url, options: getOptions(isauthorize: isauthorize)),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return response.data;
@@ -55,7 +95,7 @@ class DioHelper {
         _handleErrorResponse(url, response);
       }
     } on DioException catch (e) {
-      throw FetchDataExceptions(e.message ?? 'Network Error');
+      throw _networkException(e);
     }
   }
 
@@ -67,10 +107,13 @@ class DioHelper {
     bool isFormData = false,
   }) async {
     try {
-      Response response = await dio.put(
-        url,
-        options: getOptions(isFormData: isFormData, isauthorize: isauthorize),
-        data: reqBody,
+      Response response = await _withRetry(
+        () => dio.put(
+          url,
+          options: getOptions(isFormData: isFormData, isauthorize: isauthorize),
+          data: reqBody,
+        ),
+        allowRetry: !isFormData,
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return response.data;
@@ -78,7 +121,7 @@ class DioHelper {
         _handleErrorResponse(url, response);
       }
     } on DioException catch (e) {
-      throw FetchDataExceptions(e.message ?? 'Network Error');
+      throw _networkException(e);
     }
   }
 
@@ -89,10 +132,13 @@ class DioHelper {
     bool isFormData = false,
   }) async {
     try {
-      Response response = await dio.post(
-        url,
-        options: getOptions(isFormData: isFormData, isauthorize: isauthorize),
-        data: reqBody,
+      Response response = await _withRetry(
+        () => dio.post(
+          url,
+          options: getOptions(isFormData: isFormData, isauthorize: isauthorize),
+          data: reqBody,
+        ),
+        allowRetry: !isFormData,
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -101,7 +147,7 @@ class DioHelper {
         _handleErrorResponse(url, response);
       }
     } on DioException catch (e) {
-      throw FetchDataExceptions(e.message ?? 'Network Error');
+      throw _networkException(e);
     }
   }
 
@@ -111,10 +157,12 @@ class DioHelper {
     bool isauthorize = false,
   }) async {
     try {
-      Response response = await dio.patch(
-        url,
-        options: getOptions(isauthorize: isauthorize),
-        data: reqBody,
+      Response response = await _withRetry(
+        () => dio.patch(
+          url,
+          options: getOptions(isauthorize: isauthorize),
+          data: reqBody,
+        ),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -123,7 +171,7 @@ class DioHelper {
         _handleErrorResponse(url, response);
       }
     } on DioException catch (e) {
-      throw FetchDataExceptions(e.message ?? 'Network Error');
+      throw _networkException(e);
     }
   }
 
@@ -133,10 +181,12 @@ class DioHelper {
     bool isauthorize = false,
   }) async {
     try {
-      Response response = await dio.delete(
-        url,
-        options: getOptions(isauthorize: isauthorize),
-        data: reqBody,
+      Response response = await _withRetry(
+        () => dio.delete(
+          url,
+          options: getOptions(isauthorize: isauthorize),
+          data: reqBody,
+        ),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -145,7 +195,7 @@ class DioHelper {
         _handleErrorResponse(url, response);
       }
     } on DioException catch (e) {
-      throw FetchDataExceptions(e.message ?? 'Network Error');
+      throw _networkException(e);
     }
   }
 }

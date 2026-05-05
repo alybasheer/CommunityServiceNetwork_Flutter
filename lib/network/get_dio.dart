@@ -11,8 +11,8 @@ Options getOptions({bool isFormData = false, bool isauthorize = false}) {
             ? Headers.multipartFormDataContentType
             : Headers.jsonContentType,
     headers: {if (isauthorize && hasToken) "Authorization": "Bearer $token"},
-    sendTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 30),
+    sendTimeout: const Duration(seconds: 45),
+    receiveTimeout: const Duration(seconds: 90),
     receiveDataWhenStatusError: true,
     validateStatus: (status) => status! < 500,
   );
@@ -20,6 +20,9 @@ Options getOptions({bool isFormData = false, bool isauthorize = false}) {
 
 getDio() {
   Dio getDio = Dio();
+  getDio.options.connectTimeout = const Duration(seconds: 45);
+  getDio.options.receiveTimeout = const Duration(seconds: 90);
+  getDio.options.sendTimeout = const Duration(seconds: 45);
   getDio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (RequestOptions options, handler) {
