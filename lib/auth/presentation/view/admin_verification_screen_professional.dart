@@ -56,11 +56,12 @@ class AdminVerificationScreenProfessional extends StatelessWidget {
                   // PROFILE PHOTO
                   Obx(
                     () => VerificationImagePicker(
-                      selectedImagePath: controller.selectedImagePath.value,
-                      onTap: () {
-                        // TODO: Implement image picker with image_picker package
-                        Get.snackbar('Info', 'Image picker to be implemented');
-                      },
+                      label: 'Profile Photo',
+                      helperText:
+                          'Optional. If added, it will appear as your volunteer profile avatar.',
+                      imageBytes: controller.profilePhoto.value?.bytes,
+                      fileName: controller.profilePhoto.value?.name,
+                      onTap: () => controller.pickProfilePhoto(),
                       isLoading: controller.isSubmitting.value,
                     ),
                   ),
@@ -86,9 +87,7 @@ class AdminVerificationScreenProfessional extends StatelessWidget {
                   VerificationTextField(
                     label: 'Email Address',
                     hintText: 'alee@example.com',
-                    controller: TextEditingController(
-                      text: controller.fullNameController.text,
-                    ),
+                    controller: controller.emailController,
                     keyboardType: TextInputType.emailAddress,
                     prefixIcon: Icons.email_outlined,
                     validator: (val) => controller.validateEmail(val),
@@ -154,7 +153,7 @@ class AdminVerificationScreenProfessional extends StatelessWidget {
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(
                         RegExp(
-                          r"[a-zA-Z0-9\s,\-/\.()']",
+                          r"[a-zA-Z0-9\s,/.()'-]",
                         ), // Allow alphanumeric, spaces, commas, hyphens, slashes, dots, parentheses
                       ),
                     ],

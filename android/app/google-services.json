@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "691368195248",
-    "project_id": "muhafiz-afd88",
-    "storage_bucket": "muhafiz-afd88.firebasestorage.app"
+    "project_number": "954241809959",
+    "project_id": "cerd-2c2d7",
+    "storage_bucket": "cerd-2c2d7.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:691368195248:android:b8788769a3c2687ce97775",
+        "mobilesdk_app_id": "1:954241809959:android:1e63b39802c3b7228a1802",
         "android_client_info": {
-          "package_name": "com.example.fyp_source_code"
+          "package_name": "com.alycodes.cerd"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDctCEFDBDxmTCutSSdTWCFqEpUZimd-uE"
+          "current_key": "AIzaSyBJ6JO4vMaEuOrygFjEkbtv_YZixD3SlvQ"
         }
       ],
       "services": {
