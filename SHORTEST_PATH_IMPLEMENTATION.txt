@@ -1,0 +1,96 @@
+Shortest Path (Volunteer -> Accepted Request) Implementation
+===========================================================
+
+Backend required?
+-----------------
+For the current requirement (draw shortest path line between 2 points), NO backend change is required.
+It is implemented fully on frontend by requesting route geometry from OSRM public routing API.
+
+When backend WOULD be needed (optional future):
+- If you want your own private routing service/proxy
+- If you want API-key protected routing provider (Google/Mapbox/etc.) managed server-side
+- If you want route caching, analytics, quota control, or custom route rules
+
+
+What I changed
+--------------
+1) Updated file:
+   lib\volunteer_side\map\presentation\controller\map_controller.dart
+
+2) Added:
+   - import 'dart:convert';
+   - import 'package:http/http.dart' as http;
+   - RxList<LatLng> shortestPathPoints
+   - route refresh state:
+       DateTime? _lastRouteFetchAt
+       LatLng? _lastRouteFetchFrom
+       bool _isFetchingRoute
+   - _scheduleRouteRefresh({bool force = false})
+   - _fetchShortestPath({required LatLng from, required LatLng to})
+   - helper _readDouble(dynamic value)
+
+3) Existing getter changed:
+   - activeRoutePoints now returns shortestPathPoints first
+   - if shortest path is not available, fallback remains [current, target] (straight line)
+
+4) Route clearing:
+   - _clearActiveRequest() now also clears shortestPathPoints
+
+
+Flow / Trigger points
+---------------------
+Trigger A: Volunteer accepts request
+1. Home controller accepts request and navigates to map:
+   Get.toNamed(RouteNames.map, arguments: {'request': activeRequest.toJson()})
+2. MapScreen init:
+   mapCntrl.setActiveRequestFromArguments(Get.arguments)
+3. In MapCntrl:
+   setActiveRequest(...) stores active request + calls _scheduleRouteRefresh(force: true)
+
+Trigger B: First live location received
+1. _requestLocationPermission() gets current GPS location
+2. currentLatLng is set
+3. _scheduleRouteRefresh(force: true) is called
+4. If both points exist (current + request), shortest route fetch starts
+
+Trigger C: Volunteer keeps moving
+1. _startPositionStream() updates currentLatLng continuously
+2. each update calls _scheduleRouteRefresh()
+3. refresh is throttled:
+   - skip if last fetch is very recent (<12s) AND movement <=35m
+   - avoids spamming route API
+
+Trigger D: Map rendering
+1. MapScreen passes mapCntrl.activeRoutePoints into buildMap(...)
+2. build_map.dart already has PolylineLayer using routePoints
+3. route displayed on map
+
+
+Routing request details
+-----------------------
+Endpoint called from frontend:
+https://router.project-osrm.org/route/v1/driving/{fromLng},{fromLat};{toLng},{toLat}?overview=full&geometries=geojson
+
+Behavior:
+- On success: decode GeoJSON coordinates into LatLng list and draw full road path
+- On failure: fallback to simple 2-point line (current -> target)
+
+
+Files involved in runtime flow
+------------------------------
+A) Existing (already in project):
+   - lib\volunteer_side\home\presentation\controller\home_controller.dart
+     (acceptRequest -> navigates to map with request argument)
+   - lib\volunteer_side\map\presentation\view\map_screen.dart
+     (reads activeRoutePoints and passes to map widget)
+   - lib\volunteer_side\map\presentation\view\widgets\build_map.dart
+     (PolylineLayer draws routePoints)
+
+B) Modified by me:
+   - lib\volunteer_side\map\presentation\controller\map_controller.dart
+
+
+Summary
+-------
+You can run this feature as-is with frontend only.
+No backend changes are mandatory for "draw shortest path between volunteer and request points".
