@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:fyp_source_code/request_side/create_help_request/data/model/help_request.dart';
 import 'package:fyp_source_code/request_side/create_help_request/data/repo/help_request_repo.dart';
@@ -11,6 +12,7 @@ import 'package:fyp_source_code/volunteer_side/map/data/map_repo.dart';
 import 'package:fyp_source_code/volunteer_side/map/data/map_user_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
 class MapCntrl extends GetxController {
@@ -26,7 +28,11 @@ class MapCntrl extends GetxController {
   final RxBool isCompleting = false.obs;
   final RxBool isCancelling = false.obs;
   final RxString selectedRoleFilter = 'all'.obs;
+  final RxList<LatLng> shortestPathPoints = <LatLng>[].obs;
   StreamSubscription<Position>? positionStream;
+  DateTime? _lastRouteFetchAt;
+  LatLng? _lastRouteFetchFrom;
+  bool _isFetchingRoute = false;
 
   @override
   void onInit() {
@@ -56,6 +62,9 @@ class MapCntrl extends GetxController {
   }
 
   List<LatLng> get activeRoutePoints {
+    if (shortestPathPoints.length >= 2) {
+      return shortestPathPoints;
+    }
     final current = currentLatLng.value;
     final target = activeRequestLatLng;
     if (current == null || target == null) {
@@ -84,6 +93,7 @@ class MapCntrl extends GetxController {
   void setActiveRequest(HelpRequest request) {
     activeRequest.value = request;
     _storage.saveData(_activeRequestStorageKey, request.toJson());
+    _scheduleRouteRefresh(force: true);
   }
 
   Future<void> completeActiveRequest() async {
@@ -176,6 +186,7 @@ class MapCntrl extends GetxController {
           lat: pos.latitude,
           long: pos.longitude,
         );
+        await _scheduleRouteRefresh(force: true);
         await fetchMapUsers();
         _startPositionStream();
       }
@@ -207,6 +218,7 @@ class MapCntrl extends GetxController {
           '📍 Stream device location: ${pos.latitude}, ${pos.longitude}, Accuracy: ${pos.accuracy}m',
         );
         currentLatLng.value = LatLng(pos.latitude, pos.longitude);
+        await _scheduleRouteRefresh();
 
         Future.microtask(() async {
           try {
@@ -260,6 +272,7 @@ class MapCntrl extends GetxController {
       return;
     }
     activeRequest.value = request;
+    _scheduleRouteRefresh(force: true);
   }
 
   HelpRequest? _readRequestArgument(dynamic value) {
@@ -281,7 +294,113 @@ class MapCntrl extends GetxController {
 
   void _clearActiveRequest() {
     activeRequest.value = null;
+    shortestPathPoints.clear();
     _storage.removeData(_activeRequestStorageKey);
+  }
+
+  Future<void> _scheduleRouteRefresh({bool force = false}) async {
+    final from = currentLatLng.value;
+    final to = activeRequestLatLng;
+    if (from == null || to == null) {
+      shortestPathPoints.clear();
+      return;
+    }
+    if (_isFetchingRoute) {
+      return;
+    }
+
+    if (!force) {
+      final now = DateTime.now();
+      final recentFetch =
+          _lastRouteFetchAt != null &&
+          now.difference(_lastRouteFetchAt!) < const Duration(seconds: 12);
+      final movedEnough =
+          _lastRouteFetchFrom != null &&
+          const Distance().as(LengthUnit.Meter, _lastRouteFetchFrom!, from) > 35;
+      if (recentFetch && !movedEnough) {
+        return;
+      }
+    }
+
+    _isFetchingRoute = true;
+    try {
+      final route = await _fetchShortestPath(from: from, to: to);
+      if (route.length >= 2) {
+        shortestPathPoints.assignAll(route);
+      } else {
+        shortestPathPoints.assignAll([from, to]);
+      }
+      _lastRouteFetchAt = DateTime.now();
+      _lastRouteFetchFrom = from;
+    } catch (_) {
+      shortestPathPoints.assignAll([from, to]);
+    } finally {
+      _isFetchingRoute = false;
+    }
+  }
+
+  Future<List<LatLng>> _fetchShortestPath({
+    required LatLng from,
+    required LatLng to,
+  }) async {
+    final uri = Uri.parse(
+      'https://router.project-osrm.org/route/v1/driving/'
+      '${from.longitude},${from.latitude};${to.longitude},${to.latitude}'
+      '?overview=full&geometries=geojson',
+    );
+    final response = await http
+        .get(
+          uri,
+          headers: const {
+            'Accept': 'application/json',
+            'User-Agent': 'WeHelpApp/1.0 route-path',
+          },
+        )
+        .timeout(const Duration(seconds: 8));
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Failed to fetch route');
+    }
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw Exception('Unexpected route response');
+    }
+
+    final routes = decoded['routes'];
+    if (routes is! List || routes.isEmpty) {
+      throw Exception('No routes found');
+    }
+
+    final route = routes.first;
+    if (route is! Map<String, dynamic>) {
+      throw Exception('Invalid route');
+    }
+
+    final geometry = route['geometry'];
+    if (geometry is! Map<String, dynamic>) {
+      throw Exception('Invalid route geometry');
+    }
+
+    final coordinates = geometry['coordinates'];
+    if (coordinates is! List) {
+      throw Exception('Invalid route coordinates');
+    }
+
+    final points = <LatLng>[];
+    for (final coordinate in coordinates) {
+      if (coordinate is! List || coordinate.length < 2) {
+        continue;
+      }
+      final lng = _readDouble(coordinate[0]);
+      final lat = _readDouble(coordinate[1]);
+      if (lat == null || lng == null) {
+        continue;
+      }
+      points.add(LatLng(lat, lng));
+    }
+
+    return points;
   }
 
   void _refreshVolunteerDashboard({bool completed = false}) {
@@ -296,4 +415,14 @@ class MapCntrl extends GetxController {
     unawaited(homeController.fetchRequests());
     unawaited(homeController.fetchVolunteerStats());
   }
+}
+
+double? _readDouble(dynamic value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+  if (value is String) {
+    return double.tryParse(value);
+  }
+  return null;
 }
